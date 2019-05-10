@@ -24,9 +24,12 @@ public class IntRange
         Current = max;
     }
 
+    // Get a random odd number. For simplify drawing map.
     public int Next()
     {
         Current = MathUtils.rnd.Next(min, max + 1);
+        if (Current % 2 == 0)
+            Current++;
         return Current;
     }
 }

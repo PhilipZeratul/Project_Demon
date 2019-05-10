@@ -7,7 +7,7 @@ public class DungeonGenerator : MonoBehaviour
     public IntRange roomWidth = new IntRange(3, 10);
     public IntRange roomHeight = new IntRange(3, 10);
 
-    public GameObject tileHolder;
+    public GameObject roomHolder;
     public GameObject[] floorPrefabs;
     public GameObject[] wallPrefabs;
 
@@ -37,19 +37,44 @@ public class DungeonGenerator : MonoBehaviour
             };
 
             ///
-            DrawMap(floorPrefabs[0], roomCenter);
+            DrawMap(roomArray[i]);
         }
     }
 
-    private void DrawMap(GameObject prefab, Vector2 position)
+    private void DrawMap(DungeonRoom room)
     {
-        Instantiate(prefab, position, Quaternion.identity, tileHolder.transform);
+        GameObject roomRoot = new GameObject("roomRoot");
+        roomRoot.transform.position = room.center;
+        roomRoot.transform.SetParent(roomHolder.transform);
+
+        for (int i = 0; i < room.width; i += Constants.MapInfo.GridSize)
+        {
+            for (int j = 0; j < room.height; j += Constants.MapInfo.GridSize)
+            {
+                Vector2 position = new Vector2(room.center.x + (room.width / 2 - i) * Constants.MapInfo.GridSize,
+                                               room.center.y + (room.height / 2 - j) * Constants.MapInfo.GridSize);
+
+                if (i == 0 || i == (room.width - Constants.MapInfo.GridSize) ||
+                    j == 0 || j == (room.height - Constants.MapInfo.GridSize))
+                    Instantiate(wallPrefabs[0], position, Quaternion.identity, roomRoot.transform);
+                else
+                    Instantiate(floorPrefabs[0], position, Quaternion.identity, roomRoot.transform);
+
+            }
+        }
+
+        BoxCollider2D collider2d = roomRoot.AddComponent<BoxCollider2D>();
+        collider2d.size = new Vector2(room.width, room.height);
+
+        Rigidbody2D rigidbody2d = roomRoot.AddComponent<Rigidbody2D>();
+        rigidbody2d.gravityScale = 0;
+        rigidbody2d.constraints = RigidbodyConstraints2D.FreezeRotation;      
     }
 
     public struct DungeonRoom
     {
         public Vector2 center;
-        public float width;
-        public float height;
+        public int width;
+        public int height;
     }
 }

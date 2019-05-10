@@ -241,7 +241,7 @@ MonoBehaviour:
   roomHeight:
     min: 3
     max: 10
-  tileHolder: {fileID: 1657829517}
+  roomHolder: {fileID: 1657829517}
   floorPrefabs:
   - {fileID: 42037873106227914, guid: ff09c758da70d47a88df7d5f6348cd02, type: 3}
   wallPrefabs:
@@ -270,7 +270,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1657829518}
   m_Layer: 0
-  m_Name: TileHolder
+  m_Name: RoomHolder
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -284,7 +284,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1657829517}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.11043131, y: -3.5010073, z: -581.16016}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
