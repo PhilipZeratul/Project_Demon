@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using Unity.Mathematics;
 
 
 public static class MathUtils
@@ -9,13 +8,13 @@ public static class MathUtils
 
     public static Vector2 GetRandomPointInCircle(float radius)
     {
-        float theta = 2 * math.PI * (float)rnd.NextDouble();
+        float theta = 2 * Mathf.PI * (float)rnd.NextDouble();
         float u = (float)rnd.NextDouble() + (float)rnd.NextDouble();
         float r;
         if (u > 1) r = 2 - u;
         else r = u;
-        return new Vector2(RoundToGrid(radius * r * math.cos(theta), Constants.MapInfo.GridSize),
-                           RoundToGrid(radius * r * math.sin(theta), Constants.MapInfo.GridSize));
+        return new Vector2(RoundToGrid(radius * r * Mathf.Cos(theta), Constants.MapInfo.GridSize),
+                          RoundToGrid(radius * r * Mathf.Sin(theta), Constants.MapInfo.GridSize));
     }
 
     private static float RandomFloatBetween(float minValue, float maxValue)
@@ -26,6 +25,6 @@ public static class MathUtils
 
     public static float RoundToGrid(float n, float gridSize)
     {
-        return math.floor((n + gridSize - 1) / gridSize) * gridSize;
+        return Mathf.Floor((n + gridSize - 1) / gridSize) * gridSize;
     }
 }
