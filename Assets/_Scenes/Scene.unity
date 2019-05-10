@@ -173,7 +173,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 5
+  orthographic size: 60
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -233,14 +233,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   numOfRooms:
-    min: 5
-    max: 20
+    min: 40
+    max: 50
   roomWidth:
-    min: 3
-    max: 10
+    min: 5
+    max: 13
   roomHeight:
-    min: 3
-    max: 10
+    min: 5
+    max: 13
   roomHolder: {fileID: 1657829517}
   floorPrefabs:
   - {fileID: 42037873106227914, guid: ff09c758da70d47a88df7d5f6348cd02, type: 3}
