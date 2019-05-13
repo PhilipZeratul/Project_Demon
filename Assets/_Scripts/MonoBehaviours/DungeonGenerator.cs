@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
+using TriangulationMethods;
 
 
 public class DungeonGenerator : MonoBehaviour
@@ -22,13 +24,17 @@ public class DungeonGenerator : MonoBehaviour
 
     private DungeonRoom[] roomArray;
     private List<DungeonRoom> mainRoomList = new List<DungeonRoom>();
+    private WaitForFixedUpdate waitForFixedUpdate = new WaitForFixedUpdate();
 
 
-    private void Start()
+    private IEnumerator Start()
     {
         Generate();
         SpawnMap();
+        yield return StartCoroutine(WaitForRigidbody());
+        UpdateRoomInfo();
         SelectMainRoom();
+        Triangulation();
     }
 
     private void Generate()
@@ -84,18 +90,91 @@ public class DungeonGenerator : MonoBehaviour
         }
     }
 
+    private IEnumerator WaitForRigidbody()
+    {
+        // Speed up physics simulation.
+        Time.timeScale = 10;
+        while (true)
+        {
+            bool isAllSleeping = true;
+
+            for (int i = 0; i < roomArray.Length; i++)
+            {
+                if (!roomArray[i].root.GetComponent<Rigidbody2D>().IsSleeping())
+                {
+                    isAllSleeping = false;
+                    break;
+                }
+            }
+
+            if (isAllSleeping)
+                break;
+            yield return waitForFixedUpdate;
+        }
+
+        Debug.LogFormat("WaitForRigidbody Finished!");
+        Time.timeScale = 1;
+    }
+
+    private void UpdateRoomInfo()
+    {
+        for (int i = 0; i < roomArray.Length; i++)
+        {
+            roomArray[i].center = roomArray[i].root.transform.position;
+        }
+    }
+
     private void SelectMainRoom()
     {
         mainRoomList.Clear();
 
+        // Get mean of width and height.
+        float widthMean = 0f, heightMean = 0f;
         for (int i = 0; i < roomArray.Length; i++)
         {
-            if (roomArray[i].width > roomWidth.Mean() * Constants.MapInfo.MainRoomThreshold &&
-                roomArray[i].height > roomHeight.Mean() * Constants.MapInfo.MainRoomThreshold)
+            widthMean += roomArray[i].width;
+            heightMean += roomArray[i].height;
+        }
+        widthMean /= (float)roomArray.Length;
+        heightMean /= (float)roomArray.Length;
+
+        for (int i = 0; i < roomArray.Length; i++)
+        {
+            if (roomArray[i].width > widthMean * Constants.MapInfo.MainRoomThreshold &&
+                roomArray[i].height > heightMean * Constants.MapInfo.MainRoomThreshold)
             {
                 mainRoomList.Add(roomArray[i]);
                 Instantiate(wallPrefabs[0], roomArray[i].center, Quaternion.identity, roomArray[i].root.transform);
             }
+        }
+    }
+
+    private void Triangulation()
+    {
+        Debug.Log("DelaunayTriangulation");
+
+
+
+        List<Vector3> pointList = new List<Vector3>();
+        for (int i = 0; i < mainRoomList.Count; i++)      
+            pointList.Add(mainRoomList[i].center);
+
+        List<Triangle> triangleList = DelaunayTriangulation.TriangulateByFlippingEdges(pointList);
+
+        Debug.Log("Triangulation Finished");
+        /////
+        DrawTriangles(triangleList);
+    }
+
+    private void DrawTriangles(List<Triangle> triangleList)
+    {
+
+        Debug.LogFormat("DrawTriangles, num = {0}", triangleList.Count);
+        for (int i = 0; i < triangleList.Count; i++)
+        {
+            Debug.DrawLine(triangleList[i].v1.position, triangleList[i].v2.position, Color.yellow, 100f);
+            Debug.DrawLine(triangleList[i].v2.position, triangleList[i].v3.position, Color.yellow, 100f);
+            Debug.DrawLine(triangleList[i].v3.position, triangleList[i].v1.position, Color.yellow, 100f);
         }
     }
 }

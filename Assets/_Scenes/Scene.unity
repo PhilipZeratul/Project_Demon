@@ -233,14 +233,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   numOfRooms:
-    min: 40
-    max: 50
+    min: 80
+    max: 100
   roomWidth:
     min: 5
-    max: 13
+    max: 15
   roomHeight:
     min: 5
-    max: 13
+    max: 15
   roomHolder: {fileID: 1657829517}
   floorPrefabs:
   - {fileID: 42037873106227914, guid: ff09c758da70d47a88df7d5f6348cd02, type: 3}

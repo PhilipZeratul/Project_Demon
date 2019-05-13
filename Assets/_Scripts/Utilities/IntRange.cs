@@ -32,9 +32,4 @@ public class IntRange
             Current++;
         return Current;
     }
-
-    public int Mean()
-    {
-        return (min + max) / 2;
-    }
 }
