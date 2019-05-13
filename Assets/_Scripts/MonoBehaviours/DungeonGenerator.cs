@@ -16,6 +16,7 @@ public class DungeonGenerator : MonoBehaviour
 
     private struct DungeonRoom
     {
+        public int id;
         public Vector2 center;
         public int width;
         public int height;
@@ -49,6 +50,7 @@ public class DungeonGenerator : MonoBehaviour
 
             roomArray[i] = new DungeonRoom
             {
+                id = i,
                 center = roomCenter,
                 width = roomWidth.Next(),
                 height = roomHeight.Next()
