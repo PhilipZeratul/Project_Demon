@@ -15,7 +15,7 @@ namespace TriangulationMethods
 
             for (int i = 0; i < sites.Count; i++)
             {
-                vertices.Add(new Vertex(sites[i]));
+                vertices.Add(new Vertex(sites[i], (int)sites[i].z));
             }
 
             //Triangulate the convex hull of the sites

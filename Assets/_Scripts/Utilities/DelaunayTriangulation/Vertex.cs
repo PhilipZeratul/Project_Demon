@@ -24,9 +24,19 @@ namespace TriangulationMethods
         public bool isConvex;
         public bool isEar;
 
+        // Tune for DungeonGeneration
+        public int id;
+
+
         public Vertex(Vector3 position)
         {
             this.position = position;
+        }
+
+        public Vertex(Vector2 position, int vertexId)
+        {
+            this.position = position;
+            this.id = vertexId;
         }
 
         //Get 2d pos of this vertex

@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using TriangulationMethods;
+using MinimumSpanningTree;
 
 
 public class DungeonGenerator : MonoBehaviour
@@ -35,7 +36,8 @@ public class DungeonGenerator : MonoBehaviour
         yield return StartCoroutine(WaitForRigidbody());
         UpdateRoomInfo();
         SelectMainRoom();
-        Triangulation();
+        List<Triangle> triangleList = Triangulation();
+        SpanningTree(triangleList);
     }
 
     private void Generate()
@@ -151,21 +153,17 @@ public class DungeonGenerator : MonoBehaviour
         }
     }
 
-    private void Triangulation()
+    private List<Triangle> Triangulation()
     {
-        Debug.Log("DelaunayTriangulation");
-
-
-
         List<Vector3> pointList = new List<Vector3>();
         for (int i = 0; i < mainRoomList.Count; i++)      
-            pointList.Add(mainRoomList[i].center);
+            pointList.Add(new Vector3(mainRoomList[i].center.x, mainRoomList[i].center.y, mainRoomList[i].id));
 
         List<Triangle> triangleList = DelaunayTriangulation.TriangulateByFlippingEdges(pointList);
 
-        Debug.Log("Triangulation Finished");
-        /////
         DrawTriangles(triangleList);
+
+        return triangleList;
     }
 
     private void DrawTriangles(List<Triangle> triangleList)
@@ -174,9 +172,41 @@ public class DungeonGenerator : MonoBehaviour
         Debug.LogFormat("DrawTriangles, num = {0}", triangleList.Count);
         for (int i = 0; i < triangleList.Count; i++)
         {
-            Debug.DrawLine(triangleList[i].v1.position, triangleList[i].v2.position, Color.yellow, 100f);
-            Debug.DrawLine(triangleList[i].v2.position, triangleList[i].v3.position, Color.yellow, 100f);
-            Debug.DrawLine(triangleList[i].v3.position, triangleList[i].v1.position, Color.yellow, 100f);
+            Debug.LogFormat("v1: {0}, v2: {1}, Weight: {2}", triangleList[i].v1.id, triangleList[i].v2.id, Vector2.Distance(triangleList[i].v1.position, triangleList[i].v2.position));
+            Debug.LogFormat("v2: {0}, v3: {1}, Weight: {2}", triangleList[i].v2.id, triangleList[i].v3.id, Vector2.Distance(triangleList[i].v2.position, triangleList[i].v3.position));
+            Debug.LogFormat("v3: {0}, v1: {1}, Weight: {2}", triangleList[i].v3.id, triangleList[i].v1.id, Vector2.Distance(triangleList[i].v3.position, triangleList[i].v1.position));
+
+            Debug.DrawLine(triangleList[i].v1.position, triangleList[i].v2.position, Color.yellow, 10f);
+            Debug.DrawLine(triangleList[i].v2.position, triangleList[i].v3.position, Color.yellow, 10f);
+            Debug.DrawLine(triangleList[i].v3.position, triangleList[i].v1.position, Color.yellow, 10f);
+        }
+    }
+
+    private void SpanningTree(List<Triangle> triangleList)
+    {
+        // Generate graph from triangle list.
+        Graph<int> graph = new Graph<int>(mainRoomList.ConvertAll<int>(n => n.id));
+
+        for (int i = 0; i < triangleList.Count; i++)
+        {
+            graph.AddEdge(triangleList[i].v1.id, triangleList[i].v2.id, Vector2.Distance(triangleList[i].v1.position, triangleList[i].v2.position));
+            graph.AddEdge(triangleList[i].v2.id, triangleList[i].v3.id, Vector2.Distance(triangleList[i].v2.position, triangleList[i].v3.position));
+            graph.AddEdge(triangleList[i].v3.id, triangleList[i].v1.id, Vector2.Distance(triangleList[i].v3.position, triangleList[i].v1.position));
+        }
+
+        MST<int> mst = new MST<int>();
+        Dictionary<Graph<int>.Node, Graph<int>.Node> tree = mst.Prim(graph);
+
+        DebugSpanningTree(tree);
+    }
+
+    private void DebugSpanningTree(Dictionary<Graph<int>.Node, Graph<int>.Node> tree)
+    {
+        foreach (var element in tree)
+        {
+            Debug.LogFormat("room id: {0}, parent: {1}", element.Key.Context, element.Value.Context);
+
+            Debug.DrawLine(roomArray[element.Value.Context].center, roomArray[element.Key.Context].center, Color.red, 100f);
         }
     }
 }
