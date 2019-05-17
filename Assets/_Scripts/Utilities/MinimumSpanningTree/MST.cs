@@ -8,31 +8,34 @@ namespace MinimumSpanningTree
         private readonly float INF = float.MaxValue - 1;
 
 
-        public Dictionary<Graph<T>.Node, Graph<T>.Node> Prim(Graph<T> oriGraph)
+        public Graph<T> Prim(Graph<T> oriGraph)
         {
-            Graph<T> graph = new Graph<T>(oriGraph);
+            Graph<T> graph = new Graph<T>(oriGraph); // Copy of the original graph for calculating MST.
+            Graph<T> resultGraph = new Graph<T>(oriGraph.NodeList.ConvertAll(n => n.Context)); // Result graph, copy all the node but without edges.
 
-            Dictionary<Graph<T>.Node, float> keys = new Dictionary<Graph<T>.Node, float>();
+            Dictionary<Graph<T>.Node, float> nodeWeightPair = new Dictionary<Graph<T>.Node, float>();
             foreach(var node in graph.NodeList)            
-                keys.Add(node, INF);
-            keys[graph.NodeList[0]] = 0f;
+                nodeWeightPair.Add(node, INF);
+            nodeWeightPair[graph.NodeList[0]] = 0f;
 
             Dictionary<Graph<T>.Node, Graph<T>.Node> tree = new Dictionary<Graph<T>.Node, Graph<T>.Node>();
 
             while (graph.Count() > 0)
             {
-                Graph<T>.Node minNode = FindMinNodeAndDelete(graph, keys);
+                Graph<T>.Node minNode = FindMinNodeAndDelete(graph, nodeWeightPair);
                 foreach (var neighborNode in minNode.GetNeighbors())
                 {
-                    if (graph.ContainsContext(neighborNode.Context) && (minNode.GetWeight(neighborNode) <= keys[neighborNode]))
+                    if (graph.ContainsContext(neighborNode.Context) && (minNode.GetWeight(neighborNode) <= nodeWeightPair[neighborNode]))
                     {
-                        keys[neighborNode] = minNode.GetWeight(neighborNode);
-                        tree[neighborNode] = minNode;
+                        nodeWeightPair[neighborNode] = minNode.GetWeight(neighborNode);
+                        tree[neighborNode] = minNode; // neighborNode is child, minNode is parent.
                     }
                 }
             }
+            foreach (var childNode in tree.Keys)
+                resultGraph.AddEdge(tree[childNode].Context, childNode.Context, 1f);
 
-            return tree;
+            return resultGraph;
         }
 
         private Graph<T>.Node FindMinNodeAndDelete(Graph<T> graph, Dictionary<Graph<T>.Node, float> keys)

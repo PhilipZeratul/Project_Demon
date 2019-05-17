@@ -98,8 +98,13 @@ namespace MinimumSpanningTree
             Node fromNode = FindNode(from);
             Node toNode = FindNode(to);
 
-            if (fromNode != null && toNode != null && !fromNode.ContainsEdge(toNode))           
-                fromNode.EdgeList.Add(new Edge(toNode, weight));
+            if (fromNode != null && toNode != null)
+            {
+                if (!fromNode.ContainsEdge(toNode))
+                    fromNode.EdgeList.Add(new Edge(toNode, weight));
+                if (!toNode.ContainsEdge(fromNode))
+                    toNode.EdgeList.Add(new Edge(fromNode, weight));
+            }
         }
     }
 }
