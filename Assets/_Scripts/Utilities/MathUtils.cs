@@ -27,4 +27,12 @@ public static class MathUtils
     {
         return Mathf.Floor((n + gridSize - 1) / gridSize) * gridSize;
     }
+
+    public static bool NearlyEqual(float a, float b, float epsilon = 0.001f)
+    {
+        if (Mathf.Abs(a - b) < epsilon)
+            return true;
+        else
+            return false;
+    }
 }

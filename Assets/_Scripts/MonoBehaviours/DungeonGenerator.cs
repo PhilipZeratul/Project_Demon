@@ -37,10 +37,12 @@ public class DungeonGenerator : MonoBehaviour
         SpawnMap();
         yield return StartCoroutine(WaitForRigidbody());
         UpdateRoomInfo();
+        RoundRoomPositionToGrid();
         SelectMainRoom();
         List<Triangle> triangleList = Triangulation();
         Graph<int> graph = SpanningTree(triangleList);
         AddBackEdges(triangleList, ref graph);
+        ConstructCorridorLine(graph);
     }
 
     private void Generate()
@@ -121,6 +123,11 @@ public class DungeonGenerator : MonoBehaviour
 
         Debug.LogFormat("WaitForRigidbody Finished!");
         Time.timeScale = 1;
+    }
+
+    private void RoundRoomPositionToGrid()
+    {
+        //~TODO:
     }
 
     private void UpdateRoomInfo()
@@ -259,6 +266,47 @@ public class DungeonGenerator : MonoBehaviour
 
             ///
             Debug.DrawLine(roomArray[v1List[index]].center, roomArray[v2List[index]].center, Color.green, 100f);
+        }
+    }
+
+    private void ConstructCorridorLine(Graph<int> roomGraph)
+    {
+        foreach (var node in roomGraph.NodeList)
+        {
+            foreach (var nextNode in node.GetNeighbors())
+            {
+                if (MathUtils.NearlyEqual(node.GetWeight(nextNode), 1f)) // Weight 1f is the original default weight in roomGraph.
+                {
+                    DungeonRoom room1 = roomArray[node.Context];
+                    DungeonRoom room2 = roomArray[nextNode.Context];
+
+                    if (Mathf.Abs(room1.center.x - room2.center.x) < ((room1.width + room2.width) / 2 - Constants.MapInfo.GridSize)) // Construct vertical line.
+                    {
+                        float lineX = (room1.center.x + room2.center.x) / 2;
+                        Debug.DrawLine(new Vector2(lineX, room1.center.y), new Vector2(lineX, room2.center.y), Color.blue, 100f);
+                    }
+                    else if (Mathf.Abs(room1.center.y - room2.center.y) < ((room1.height + room2.height) / 2 -Constants.MapInfo.GridSize)) // Construct horizontal line.
+                    {
+                        float lineY = (room1.center.y + room2.center.y) / 2;
+                        Debug.DrawLine(new Vector2(room1.center.x, lineY), new Vector2(room2.center.x, lineY), Color.blue, 100f);
+                    }
+                    else // Construct L shape line.
+                    {
+                        //if (MathUtils.rnd.Next(0, 2) > 0) // Upper L
+                        //{
+                            Debug.DrawLine(room1.center, new Vector2(room1.center.x, room2.center.y), Color.blue, 100f);
+                            Debug.DrawLine(room2.center, new Vector2(room1.center.x, room2.center.y), Color.blue, 100f);
+                        //}
+                        //else // Lower L
+                        //{
+
+                        //}
+                    }
+
+                    node.SetWeight(nextNode, 2f); // Weight 2f indicates that this edge is dealt with.
+                    nextNode.SetWeight(node, 2f);
+                }
+            }
         }
     }
 }

@@ -35,12 +35,21 @@ namespace MinimumSpanningTree
                 }
                 return float.MaxValue;
             }
+
+            public void SetWeight(Node next, float weight)
+            {
+                foreach (var edge in EdgeList)
+                {
+                    if (edge.Next == next)
+                        edge.Weight = weight;
+                }
+            }
         }
 
         public class Edge
         {
             public Node Next { get; private set; }
-            public float Weight { get; private set; }
+            public float Weight { get; set; }
 
 
             public Edge(Node next, float weight)
