@@ -10,6 +10,8 @@ public class DungeonGenerator : MonoBehaviour
     public IntRange numOfRooms = new IntRange(5, 20);
     public IntRange roomWidth = new IntRange(3, 10);
     public IntRange roomHeight = new IntRange(3, 10);
+    [Range(0f, 1f)]
+    public float edgeAddBackRatio = 0.1f;
 
     public GameObject roomHolder;
     public GameObject[] floorPrefabs;
@@ -37,7 +39,8 @@ public class DungeonGenerator : MonoBehaviour
         UpdateRoomInfo();
         SelectMainRoom();
         List<Triangle> triangleList = Triangulation();
-        SpanningTree(triangleList);
+        Graph<int> graph = SpanningTree(triangleList);
+        AddBackEdges(triangleList, ref graph);
     }
 
     private void Generate()
@@ -182,7 +185,7 @@ public class DungeonGenerator : MonoBehaviour
         }
     }
 
-    private void SpanningTree(List<Triangle> triangleList)
+    private Graph<int> SpanningTree(List<Triangle> triangleList)
     {
         // Generate graph from triangle list.
         // The context of a node in the graph holds the value of the id in a triangle's vertex.
@@ -201,6 +204,8 @@ public class DungeonGenerator : MonoBehaviour
 
         ///
         DrawSpanningTree(mstGraph);
+
+        return mstGraph;
     }
 
     private void DrawSpanningTree(Graph<int> mstGraph)
@@ -215,8 +220,45 @@ public class DungeonGenerator : MonoBehaviour
         }
     }
 
-    private void AddBackEdges(List<Triangle> triangleList, Graph<int> mstGraph)
+    private void AddBackEdges(List<Triangle> triangleList, ref Graph<int> mstGraph)
     {
-        //for
+        List<int> v1List = new List<int>();
+        List<int> v2List = new List<int>();
+        List<bool> isPickedList = new List<bool>();
+
+        for (int i = 0; i < triangleList.Count; i++)
+        {
+            if (!mstGraph.ContainsEdge(triangleList[i].v1.id, triangleList[i].v2.id))
+            {
+                v1List.Add(triangleList[i].v1.id);
+                v2List.Add(triangleList[i].v2.id);
+                isPickedList.Add(false);
+            }
+            if (!mstGraph.ContainsEdge(triangleList[i].v2.id, triangleList[i].v3.id))
+            {
+                v1List.Add(triangleList[i].v2.id);
+                v2List.Add(triangleList[i].v3.id);
+                isPickedList.Add(false);
+            }
+            if (!mstGraph.ContainsEdge(triangleList[i].v3.id, triangleList[i].v1.id))
+            {
+                v1List.Add(triangleList[i].v3.id);
+                v2List.Add(triangleList[i].v1.id);
+                isPickedList.Add(false);
+            }
+        }
+
+        int index = MathUtils.rnd.Next(0, v1List.Count);
+        for (int i = 0; i < v1List.Count * edgeAddBackRatio; i++)
+        {
+            while (isPickedList[index])
+                index = MathUtils.rnd.Next(0, v1List.Count);
+
+            mstGraph.AddEdge(v1List[index], v2List[index], 1f);
+            isPickedList[index] = true;
+
+            ///
+            Debug.DrawLine(roomArray[v1List[index]].center, roomArray[v2List[index]].center, Color.green, 100f);
+        }
     }
 }

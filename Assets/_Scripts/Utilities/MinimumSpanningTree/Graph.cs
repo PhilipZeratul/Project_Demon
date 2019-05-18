@@ -106,5 +106,16 @@ namespace MinimumSpanningTree
                     toNode.EdgeList.Add(new Edge(fromNode, weight));
             }
         }
+
+        public bool ContainsEdge(T from, T to)
+        {
+            Node fromNode = FindNode(from);
+            Node toNode = FindNode(to);
+
+            if (fromNode != null && toNode != null && fromNode.ContainsEdge(toNode))
+                return true;
+            else
+                return false;
+        }
     }
 }
