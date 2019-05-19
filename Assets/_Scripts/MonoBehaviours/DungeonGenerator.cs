@@ -17,7 +17,7 @@ public class DungeonGenerator : MonoBehaviour
     public GameObject[] floorPrefabs;
     public GameObject[] wallPrefabs;
 
-    private struct DungeonRoom
+    private class DungeonRoom
     {
         public int id;
         public Vector2 center;
@@ -26,18 +26,25 @@ public class DungeonGenerator : MonoBehaviour
         public GameObject root;
     }
 
-    private DungeonRoom[] roomArray;
+    private struct Line
+    {
+        public Vector2 start;
+        public Vector2 end;
+    }
+
+    private List<DungeonRoom> roomArray = new List<DungeonRoom>();
     private List<DungeonRoom> mainRoomList = new List<DungeonRoom>();
-    private WaitForFixedUpdate waitForFixedUpdate = new WaitForFixedUpdate();
+    private List<Line> corridorLineList = new List<Line>();
+    private readonly WaitForFixedUpdate waitForFixedUpdate = new WaitForFixedUpdate();
 
 
     private IEnumerator Start()
     {
-        Generate();
+        GenerateRoom();
         SpawnMap();
         yield return StartCoroutine(WaitForRigidbody());
-        UpdateRoomInfo();
         RoundRoomPositionToGrid();
+        UpdateRoomInfo();
         SelectMainRoom();
         List<Triangle> triangleList = Triangulation();
         Graph<int> graph = SpanningTree(triangleList);
@@ -45,34 +52,35 @@ public class DungeonGenerator : MonoBehaviour
         ConstructCorridorLine(graph);
     }
 
-    private void Generate()
+    private void GenerateRoom()
     {
-        roomArray = new DungeonRoom[numOfRooms.Next()];
-
+        // Immediately get next rnd numOfRooms but use current(max) roomWidth & roomHeight to calculate radius.
+        numOfRooms.Next();
         float radius = Mathf.Sqrt(numOfRooms.Current) * (roomWidth.Current + roomHeight.Current) / 6;
         for (int i = 0; i < numOfRooms.Current; i++)
         {
             // Populate dungeon room array
             Vector2 roomCenter = MathUtils.GetRandomPointInCircle(radius);
 
-            roomArray[i] = new DungeonRoom
+            roomArray.Add(new DungeonRoom
             {
                 id = i,
                 center = roomCenter,
                 width = roomWidth.Next(),
                 height = roomHeight.Next()
-            };
+            });
         }
     }
 
     private void SpawnMap()
     {
-        for (int i = 0;  i < roomArray.Length; i++)
+        for (int i = 0;  i < roomArray.Count; i++)
         {
             GameObject roomRoot = new GameObject("roomRoot");
             roomRoot.transform.position = roomArray[i].center;
             roomRoot.transform.SetParent(roomHolder.transform);
 
+            // Spawn floor and wall
             for (int m = 0; m < roomArray[i].width; m += Constants.MapInfo.GridSize)
             {
                 for (int n = 0; n < roomArray[i].height; n += Constants.MapInfo.GridSize)
@@ -96,6 +104,8 @@ public class DungeonGenerator : MonoBehaviour
             rigidbody2d.constraints = RigidbodyConstraints2D.FreezeRotation;
 
             roomArray[i].root = roomRoot;
+            DungeonRoomId roomID = roomRoot.AddComponent<DungeonRoomId>();
+            roomID.id = roomArray[i].id;
         }
     }
 
@@ -107,7 +117,7 @@ public class DungeonGenerator : MonoBehaviour
         {
             bool isAllSleeping = true;
 
-            for (int i = 0; i < roomArray.Length; i++)
+            for (int i = 0; i < roomArray.Count; i++)
             {
                 if (!roomArray[i].root.GetComponent<Rigidbody2D>().IsSleeping())
                 {
@@ -128,11 +138,18 @@ public class DungeonGenerator : MonoBehaviour
     private void RoundRoomPositionToGrid()
     {
         //~TODO:
+        for (int i = 0; i < roomArray.Count; i++)
+        {
+            roomArray[i].root.GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Static;
+            roomArray[i].root.transform.position = new Vector2(
+                MathUtils.RoundToGrid(roomArray[i].root.transform.position.x, Constants.MapInfo.GridSize),
+                MathUtils.RoundToGrid(roomArray[i].root.transform.position.y, Constants.MapInfo.GridSize));
+        }
     }
 
     private void UpdateRoomInfo()
     {
-        for (int i = 0; i < roomArray.Length; i++)
+        for (int i = 0; i < roomArray.Count; i++)
         {
             roomArray[i].center = roomArray[i].root.transform.position;
         }
@@ -144,15 +161,15 @@ public class DungeonGenerator : MonoBehaviour
 
         // Get mean of width and height.
         float widthMean = 0f, heightMean = 0f;
-        for (int i = 0; i < roomArray.Length; i++)
+        for (int i = 0; i < roomArray.Count; i++)
         {
             widthMean += roomArray[i].width;
             heightMean += roomArray[i].height;
         }
-        widthMean /= (float)roomArray.Length;
-        heightMean /= (float)roomArray.Length;
+        widthMean /= (float)roomArray.Count;
+        heightMean /= (float)roomArray.Count;
 
-        for (int i = 0; i < roomArray.Length; i++)
+        for (int i = 0; i < roomArray.Count; i++)
         {
             if (roomArray[i].width > widthMean * Constants.MapInfo.MainRoomThreshold &&
                 roomArray[i].height > heightMean * Constants.MapInfo.MainRoomThreshold)
@@ -271,6 +288,7 @@ public class DungeonGenerator : MonoBehaviour
 
     private void ConstructCorridorLine(Graph<int> roomGraph)
     {
+        corridorLineList.Clear();
         foreach (var node in roomGraph.NodeList)
         {
             foreach (var nextNode in node.GetNeighbors())
@@ -279,28 +297,32 @@ public class DungeonGenerator : MonoBehaviour
                 {
                     DungeonRoom room1 = roomArray[node.Context];
                     DungeonRoom room2 = roomArray[nextNode.Context];
+                    Vector2 start = new Vector2();
+                    Vector2 end = new Vector2();
 
                     if (Mathf.Abs(room1.center.x - room2.center.x) < ((room1.width + room2.width) / 2 - Constants.MapInfo.GridSize)) // Construct vertical line.
                     {
                         float lineX = (room1.center.x + room2.center.x) / 2;
-                        Debug.DrawLine(new Vector2(lineX, room1.center.y), new Vector2(lineX, room2.center.y), Color.blue, 100f);
+                        start = new Vector2(lineX, room1.center.y);
+                        end = new Vector2(lineX, room2.center.y);
+                        AddCorridorLine(start, end);
                     }
                     else if (Mathf.Abs(room1.center.y - room2.center.y) < ((room1.height + room2.height) / 2 -Constants.MapInfo.GridSize)) // Construct horizontal line.
                     {
                         float lineY = (room1.center.y + room2.center.y) / 2;
-                        Debug.DrawLine(new Vector2(room1.center.x, lineY), new Vector2(room2.center.x, lineY), Color.blue, 100f);
+                        start = new Vector2(room1.center.x, lineY);
+                        end = new Vector2(room2.center.x, lineY);
+                        AddCorridorLine(start, end);
                     }
                     else // Construct L shape line.
                     {
-                        //if (MathUtils.rnd.Next(0, 2) > 0) // Upper L
-                        //{
-                            Debug.DrawLine(room1.center, new Vector2(room1.center.x, room2.center.y), Color.blue, 100f);
-                            Debug.DrawLine(room2.center, new Vector2(room1.center.x, room2.center.y), Color.blue, 100f);
-                        //}
-                        //else // Lower L
-                        //{
+                        start = room1.center;
+                        end = new Vector2(room1.center.x, room2.center.y);
+                        AddCorridorLine(start, end);
 
-                        //}
+                        start = room2.center;
+                        end = new Vector2(room1.center.x, room2.center.y);
+                        AddCorridorLine(start, end);
                     }
 
                     node.SetWeight(nextNode, 2f); // Weight 2f indicates that this edge is dealt with.
@@ -308,5 +330,16 @@ public class DungeonGenerator : MonoBehaviour
                 }
             }
         }
+    }
+
+    private void AddCorridorLine(Vector2 start, Vector2 end)
+    {
+        Line line = new Line
+        {
+            start = start,
+            end = end
+        };
+        corridorLineList.Add(line);
+        Debug.DrawLine(start, end, Color.blue, 100f);
     }
 }

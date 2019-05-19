@@ -14,7 +14,7 @@ public static class MathUtils
         if (u > 1) r = 2 - u;
         else r = u;
         return new Vector2(RoundToGrid(radius * r * Mathf.Cos(theta), Constants.MapInfo.GridSize),
-                          RoundToGrid(radius * r * Mathf.Sin(theta), Constants.MapInfo.GridSize));
+                           RoundToGrid(radius * r * Mathf.Sin(theta), Constants.MapInfo.GridSize));
     }
 
     private static float RandomFloatBetween(float minValue, float maxValue)

@@ -241,6 +241,7 @@ MonoBehaviour:
   roomHeight:
     min: 5
     max: 15
+  edgeAddBackRatio: 0.1
   roomHolder: {fileID: 1657829517}
   floorPrefabs:
   - {fileID: 42037873106227914, guid: ff09c758da70d47a88df7d5f6348cd02, type: 3}
