@@ -14,6 +14,7 @@ public class DungeonGenerator : MonoBehaviour
     public float edgeAddBackRatio = 0.1f;
 
     public GameObject roomHolder;
+    public GameObject corridorHolder;
     public GameObject[] floorPrefabs;
     public GameObject[] wallPrefabs;
 
@@ -24,16 +25,51 @@ public class DungeonGenerator : MonoBehaviour
         public int width;
         public int height;
         public GameObject root;
+        public List<GameObject> floorGOList = new List<GameObject>();
+        public List<GameObject> wallGOList = new List<GameObject>();
     }
 
-    private struct Line
+    private class Line
     {
-        public Vector2 start;
-        public Vector2 end;
+        public Vector2 Start { get; private set; }
+        public Vector2 End { get; private set; }
+
+        // Horizontal line: from left to right
+        // Vertical line: from bottom to top
+        public Line(Vector2 start, Vector2 end)
+        {
+            if ((start.x < end.x) || (start.y < end.y))
+            {
+                Start = start;
+                End = end;
+            }
+            else
+            {
+                Start = end;
+                End = start;
+            }
+        }
+
+        public Vector2 Center()
+        {
+            return (Start + End) / 2;
+        }
+
+        public bool IsHorizontal()
+        {
+            return MathUtils.NearlyEqual(Start.y, End.y);
+        }
+
+        public bool IsVertical()
+        {
+            return MathUtils.NearlyEqual(Start.x, End.x);
+        }
     }
 
-    private List<DungeonRoom> roomArray = new List<DungeonRoom>();
+    private List<DungeonRoom> allRoomList = new List<DungeonRoom>();
     private List<DungeonRoom> mainRoomList = new List<DungeonRoom>();
+    private List<DungeonRoom> supportRoomList = new List<DungeonRoom>();
+    private List<DungeonRoom> corridorRoomList = new List<DungeonRoom>();
     private List<Line> corridorLineList = new List<Line>();
     private readonly WaitForFixedUpdate waitForFixedUpdate = new WaitForFixedUpdate();
 
@@ -49,7 +85,10 @@ public class DungeonGenerator : MonoBehaviour
         List<Triangle> triangleList = Triangulation();
         Graph<int> graph = SpanningTree(triangleList);
         AddBackEdges(triangleList, ref graph);
-        ConstructCorridorLine(graph);
+        GenerateCorridorLine(graph);
+        PruneRoom();
+        ChangeCollider();
+        BuildCorridor();
     }
 
     private void GenerateRoom()
@@ -62,7 +101,7 @@ public class DungeonGenerator : MonoBehaviour
             // Populate dungeon room array
             Vector2 roomCenter = MathUtils.GetRandomPointInCircle(radius);
 
-            roomArray.Add(new DungeonRoom
+            allRoomList.Add(new DungeonRoom
             {
                 id = i,
                 center = roomCenter,
@@ -74,38 +113,44 @@ public class DungeonGenerator : MonoBehaviour
 
     private void SpawnMap()
     {
-        for (int i = 0;  i < roomArray.Count; i++)
+        for (int i = 0;  i < allRoomList.Count; i++)
         {
             GameObject roomRoot = new GameObject("roomRoot");
-            roomRoot.transform.position = roomArray[i].center;
+            roomRoot.transform.position = allRoomList[i].center;
             roomRoot.transform.SetParent(roomHolder.transform);
 
             // Spawn floor and wall
-            for (int m = 0; m < roomArray[i].width; m += Constants.MapInfo.GridSize)
+            for (int m = 0; m < allRoomList[i].width; m += Constants.MapInfo.GridSize)
             {
-                for (int n = 0; n < roomArray[i].height; n += Constants.MapInfo.GridSize)
+                for (int n = 0; n < allRoomList[i].height; n += Constants.MapInfo.GridSize)
                 {
-                    Vector2 position = new Vector2(roomArray[i].center.x + (roomArray[i].width / 2 - m) * Constants.MapInfo.GridSize,
-                                                   roomArray[i].center.y + (roomArray[i].height / 2 - n) * Constants.MapInfo.GridSize);
+                    Vector2 position = new Vector2(allRoomList[i].center.x + (allRoomList[i].width / 2 - m) * Constants.MapInfo.GridSize,
+                                                   allRoomList[i].center.y + (allRoomList[i].height / 2 - n) * Constants.MapInfo.GridSize);
 
-                    if (m == 0 || m == (roomArray[i].width - Constants.MapInfo.GridSize) ||
-                        n == 0 || n == (roomArray[i].height - Constants.MapInfo.GridSize))
-                        Instantiate(wallPrefabs[0], position, Quaternion.identity, roomRoot.transform);
+                    if (m == 0 || m == (allRoomList[i].width - Constants.MapInfo.GridSize) ||
+                        n == 0 || n == (allRoomList[i].height - Constants.MapInfo.GridSize))
+                    {
+                        GameObject wallGO = Instantiate(wallPrefabs[0], position, Quaternion.identity, roomRoot.transform);
+                        allRoomList[i].wallGOList.Add(wallGO);
+                    }
                     else
-                        Instantiate(floorPrefabs[0], position, Quaternion.identity, roomRoot.transform);
+                    {
+                        GameObject floorGO = Instantiate(floorPrefabs[0], position, Quaternion.identity, roomRoot.transform);
+                        allRoomList[i].floorGOList.Add(floorGO);
+                    }
                 }
             }
 
             BoxCollider2D collider2d = roomRoot.AddComponent<BoxCollider2D>();
-            collider2d.size = new Vector2(roomArray[i].width, roomArray[i].height);
+            collider2d.size = new Vector2(allRoomList[i].width, allRoomList[i].height);
 
             Rigidbody2D rigidbody2d = roomRoot.AddComponent<Rigidbody2D>();
             rigidbody2d.gravityScale = 0;
             rigidbody2d.constraints = RigidbodyConstraints2D.FreezeRotation;
 
-            roomArray[i].root = roomRoot;
+            allRoomList[i].root = roomRoot;
             DungeonRoomId roomID = roomRoot.AddComponent<DungeonRoomId>();
-            roomID.id = roomArray[i].id;
+            roomID.id = allRoomList[i].id;
         }
     }
 
@@ -117,9 +162,9 @@ public class DungeonGenerator : MonoBehaviour
         {
             bool isAllSleeping = true;
 
-            for (int i = 0; i < roomArray.Count; i++)
+            for (int i = 0; i < allRoomList.Count; i++)
             {
-                if (!roomArray[i].root.GetComponent<Rigidbody2D>().IsSleeping())
+                if (!allRoomList[i].root.GetComponent<Rigidbody2D>().IsSleeping())
                 {
                     isAllSleeping = false;
                     break;
@@ -138,20 +183,20 @@ public class DungeonGenerator : MonoBehaviour
     private void RoundRoomPositionToGrid()
     {
         //~TODO:
-        for (int i = 0; i < roomArray.Count; i++)
+        for (int i = 0; i < allRoomList.Count; i++)
         {
-            roomArray[i].root.GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Static;
-            roomArray[i].root.transform.position = new Vector2(
-                MathUtils.RoundToGrid(roomArray[i].root.transform.position.x, Constants.MapInfo.GridSize),
-                MathUtils.RoundToGrid(roomArray[i].root.transform.position.y, Constants.MapInfo.GridSize));
+            allRoomList[i].root.GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Static;
+            allRoomList[i].root.transform.position = new Vector2(
+                MathUtils.RoundToGrid(allRoomList[i].root.transform.position.x, Constants.MapInfo.GridSize),
+                MathUtils.RoundToGrid(allRoomList[i].root.transform.position.y, Constants.MapInfo.GridSize));
         }
     }
 
     private void UpdateRoomInfo()
     {
-        for (int i = 0; i < roomArray.Count; i++)
+        for (int i = 0; i < allRoomList.Count; i++)
         {
-            roomArray[i].center = roomArray[i].root.transform.position;
+            allRoomList[i].center = allRoomList[i].root.transform.position;
         }
     }
 
@@ -161,21 +206,21 @@ public class DungeonGenerator : MonoBehaviour
 
         // Get mean of width and height.
         float widthMean = 0f, heightMean = 0f;
-        for (int i = 0; i < roomArray.Count; i++)
+        for (int i = 0; i < allRoomList.Count; i++)
         {
-            widthMean += roomArray[i].width;
-            heightMean += roomArray[i].height;
+            widthMean += allRoomList[i].width;
+            heightMean += allRoomList[i].height;
         }
-        widthMean /= (float)roomArray.Count;
-        heightMean /= (float)roomArray.Count;
+        widthMean /= (float)allRoomList.Count;
+        heightMean /= (float)allRoomList.Count;
 
-        for (int i = 0; i < roomArray.Count; i++)
+        for (int i = 0; i < allRoomList.Count; i++)
         {
-            if (roomArray[i].width > widthMean * Constants.MapInfo.MainRoomThreshold &&
-                roomArray[i].height > heightMean * Constants.MapInfo.MainRoomThreshold)
+            if (allRoomList[i].width > widthMean * Constants.MapInfo.MainRoomThreshold &&
+                allRoomList[i].height > heightMean * Constants.MapInfo.MainRoomThreshold)
             {
-                mainRoomList.Add(roomArray[i]);
-                Instantiate(wallPrefabs[0], roomArray[i].center, Quaternion.identity, roomArray[i].root.transform);
+                mainRoomList.Add(allRoomList[i]);
+                Instantiate(wallPrefabs[0], allRoomList[i].center, Quaternion.identity, allRoomList[i].root.transform);
             }
         }
     }
@@ -239,7 +284,7 @@ public class DungeonGenerator : MonoBehaviour
             for (int i = 0; i < node.EdgeList.Count; i++)
             {
                 //Debug.LogFormat("room id: {0}, child: {1}", node.Context, node.EdgeList[i].Next.Context);
-                Debug.DrawLine(roomArray[node.Context].center, roomArray[node.EdgeList[i].Next.Context].center, Color.red, 100f);
+                Debug.DrawLine(allRoomList[node.Context].center, allRoomList[node.EdgeList[i].Next.Context].center, Color.red, 100f);
             }
         }
     }
@@ -282,11 +327,12 @@ public class DungeonGenerator : MonoBehaviour
             isPickedList[index] = true;
 
             ///
-            Debug.DrawLine(roomArray[v1List[index]].center, roomArray[v2List[index]].center, Color.green, 100f);
+            Debug.DrawLine(allRoomList[v1List[index]].center, allRoomList[v2List[index]].center, Color.green, 100f);
         }
     }
 
-    private void ConstructCorridorLine(Graph<int> roomGraph)
+    //~TODO: Remove unnecessary line segments at start and end.
+    private void GenerateCorridorLine(Graph<int> roomGraph)
     {
         corridorLineList.Clear();
         foreach (var node in roomGraph.NodeList)
@@ -295,8 +341,8 @@ public class DungeonGenerator : MonoBehaviour
             {
                 if (MathUtils.NearlyEqual(node.GetWeight(nextNode), 1f)) // Weight 1f is the original default weight in roomGraph.
                 {
-                    DungeonRoom room1 = roomArray[node.Context];
-                    DungeonRoom room2 = roomArray[nextNode.Context];
+                    DungeonRoom room1 = allRoomList[node.Context];
+                    DungeonRoom room2 = allRoomList[nextNode.Context];
                     Vector2 start = new Vector2();
                     Vector2 end = new Vector2();
 
@@ -334,12 +380,131 @@ public class DungeonGenerator : MonoBehaviour
 
     private void AddCorridorLine(Vector2 start, Vector2 end)
     {
-        Line line = new Line
-        {
-            start = start,
-            end = end
-        };
+        start = new Vector2(MathUtils.RoundToGrid(start.x), MathUtils.RoundToGrid(start.y));
+        end = new Vector2(MathUtils.RoundToGrid(end.x), MathUtils.RoundToGrid(end.y));
+        Line line = new Line(start, end);
         corridorLineList.Add(line);
         Debug.DrawLine(start, end, Color.blue, 100f);
+    }
+
+    private void PruneRoom()
+    {
+        // Find support rooms.
+        for (int i = 0; i < corridorLineList.Count; i++)
+        {
+            ContactFilter2D filter2D = new ContactFilter2D();
+            List<RaycastHit2D> hitList = new List<RaycastHit2D>();
+            int hitNum = Physics2D.Linecast(corridorLineList[i].Start, corridorLineList[i].End, filter2D.NoFilter(), hitList);
+
+            for (int j = 0; j < hitNum; j++)
+            {
+                int roomID = hitList[j].transform.GetComponent<DungeonRoomId>().id;
+                if (mainRoomList.Find(room => room.id == roomID) == null)
+                {
+                    supportRoomList.Add(allRoomList[roomID]);
+                }
+            }
+        }
+        // Remove unused room gameObjects.
+        for (int i = 0; i < allRoomList.Count; i++)
+        {
+            if (!mainRoomList.Contains(allRoomList[i]) &&
+                !supportRoomList.Contains(allRoomList[i]))
+            {
+                Destroy(allRoomList[i].root);
+            }
+        }
+        allRoomList.Clear();
+        allRoomList = new List<DungeonRoom>(mainRoomList.Count + supportRoomList.Count);
+        allRoomList.AddRange(mainRoomList);
+        allRoomList.AddRange(supportRoomList);
+    }
+
+    private void ChangeCollider()
+    {
+        foreach (var room in allRoomList)
+        {
+            Destroy(room.root.GetComponent<Collider2D>());
+            foreach (var floorGO in room.floorGOList)
+            {
+                floorGO.AddComponent<BoxCollider2D>();
+            }
+            foreach (var wallGO in room.wallGOList)
+            {
+                wallGO.AddComponent<BoxCollider2D>();
+            }
+        }
+    }
+
+    private void BuildCorridor()
+    {
+        float circleRadius = Constants.MapInfo.GridSize / 4f;
+        ContactFilter2D filter2D = new ContactFilter2D();
+
+        foreach (var line in corridorLineList)
+        {
+            GameObject corridorRoot = new GameObject("corridorRoot");
+            corridorRoot.transform.position = line.Center();
+            corridorRoot.transform.SetParent(corridorHolder.transform);
+
+            if (line.IsHorizontal())
+            {
+                for (float x = line.Start.x - 2 * Constants.MapInfo.GridSize;
+                           x < line.End.x + 3 * Constants.MapInfo.GridSize;
+                           x += Constants.MapInfo.GridSize)
+                {
+                    float[] y = new float[5];
+                    y[0] = line.Start.y - 2 * Constants.MapInfo.GridSize; // Wall
+                    y[1] = line.Start.y - Constants.MapInfo.GridSize;     // Floor
+                    y[2] = line.Start.y;                                  // Floor
+                    y[3] = line.Start.y + Constants.MapInfo.GridSize;     // Floor
+                    y[4] = line.Start.y + 2 * Constants.MapInfo.GridSize; // Wall
+
+                    for (int i = 0; i < y.Length; i++)
+                    {
+                        Vector2 position = new Vector2(x, y[i]);
+
+
+                        Debug.LogFormat("x = {0}, y = {1}", x, y[i]);
+
+
+                        List<Collider2D> colliderList = new List<Collider2D>();
+                        //int hitNum = Physics2D.BoxCast(position, boxSize, 0f, Vector2.right, filter2D.NoFilter(), hitList, 0.01f);
+                        int hitNum = Physics2D.OverlapCircle(position, circleRadius, filter2D.NoFilter(), colliderList);
+                        //Debug.LogFormat("hitNum = {0}", hitNum);
+                        if (hitNum == 0)
+                        {
+                            SpawnCorridorTile(position, i, corridorRoot);
+                        }
+                        else
+                        {
+                            //foreach (var hit in colliderList)
+                            //{
+                            //    if (hit.GetComponent<DungeonWall>())
+                            //    {
+                            //        Destroy(hit.gameObject);
+                            //        SpawnCorridorTile(position, i, corridorRoot);
+                            //    }
+                            //}
+                        }
+
+                    }
+                }
+            }
+            else if (line.IsVertical())
+            {
+
+            }
+        }
+    }
+
+    private void SpawnCorridorTile(Vector2 position, int i, GameObject root)
+    {
+        GameObject tileGO;
+        if (i == 0 || i == 4)
+            tileGO = Instantiate(wallPrefabs[0], position, Quaternion.identity, root.transform);
+        else
+            tileGO = Instantiate(floorPrefabs[0], position, Quaternion.identity, root.transform);
+        tileGO.AddComponent<BoxCollider2D>();
     }
 }

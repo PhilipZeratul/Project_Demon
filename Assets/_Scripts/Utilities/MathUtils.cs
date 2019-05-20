@@ -23,7 +23,7 @@ public static class MathUtils
         return (float)(minValue + (next * (maxValue - minValue)));
     }
 
-    public static float RoundToGrid(float n, float gridSize)
+    public static float RoundToGrid(float n, float gridSize = Constants.MapInfo.GridSize)
     {
         return Mathf.Floor((n + gridSize - 1) / gridSize) * gridSize;
     }
