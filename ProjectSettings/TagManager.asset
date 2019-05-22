@@ -3,7 +3,9 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - asteroid
+  - ship
   layers:
   - Default
   - TransparentFX
@@ -13,9 +15,9 @@ TagManager:
   - UI
   - 
   - 
-  - 
-  - 
-  - 
+  - Player
+  - Enemy
+  - Ground
   - 
   - 
   - 
@@ -40,4 +42,19 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Background
+    uniqueID: 3141491159
+    locked: 0
+  - name: Ground
+    uniqueID: 3007717137
+    locked: 0
+  - name: Enemy
+    uniqueID: 269954951
+    locked: 0
+  - name: Player
+    uniqueID: 3462854053
+    locked: 0
+  - name: Foreground
+    uniqueID: 3918363799
     locked: 0

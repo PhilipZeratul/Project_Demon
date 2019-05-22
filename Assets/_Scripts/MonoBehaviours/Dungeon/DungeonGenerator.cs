@@ -15,8 +15,8 @@ public class DungeonGenerator : MonoBehaviour
 
     public GameObject roomHolder;
     public GameObject corridorHolder;
-    public GameObject[] floorPrefabs;
-    public GameObject[] wallPrefabs;
+    public TileSO floorTileSO;
+    public TileSO wallTileSO;
 
     private class DungeonRoom
     {
@@ -135,12 +135,12 @@ public class DungeonGenerator : MonoBehaviour
                     if (m == 0 || m == (allRoomList[i].width - Constants.MapInfo.GridSize) ||
                         n == 0 || n == (allRoomList[i].height - Constants.MapInfo.GridSize))
                     {
-                        GameObject wallGO = Instantiate(wallPrefabs[0], position, Quaternion.identity, roomRoot.transform);
+                        GameObject wallGO = Instantiate(wallTileSO.tilePrefabList[0], position, Quaternion.identity, roomRoot.transform);
                         allRoomList[i].wallGOList.Add(wallGO);
                     }
                     else
                     {
-                        GameObject floorGO = Instantiate(floorPrefabs[0], position, Quaternion.identity, roomRoot.transform);
+                        GameObject floorGO = Instantiate(floorTileSO.tilePrefabList[0], position, Quaternion.identity, roomRoot.transform);
                         allRoomList[i].floorGOList.Add(floorGO);
                     }
                 }
@@ -162,7 +162,7 @@ public class DungeonGenerator : MonoBehaviour
     private IEnumerator WaitForRigidbody()
     {
         // Speed up physics simulation.
-        Time.timeScale = 10;
+        Time.timeScale = 20;
         while (true)
         {
             bool isAllSleeping = true;
@@ -181,7 +181,7 @@ public class DungeonGenerator : MonoBehaviour
             yield return waitForFixedUpdate;
         }
 
-        Debug.LogFormat("WaitForRigidbody Finished!");
+        //Debug.LogFormat("WaitForRigidbody Finished!");
         Time.timeScale = 1;
     }
 
@@ -225,7 +225,7 @@ public class DungeonGenerator : MonoBehaviour
                 allRoomList[i].height > heightMean * Constants.MapInfo.MainRoomThreshold)
             {
                 mainRoomList.Add(allRoomList[i]);
-                Instantiate(wallPrefabs[0], allRoomList[i].center, Quaternion.identity, allRoomList[i].root.transform);
+                //Instantiate(wallTileSO.tilePrefabList[0], allRoomList[i].center, Quaternion.identity, allRoomList[i].root.transform); // A marker for main room center.
             }
         }
     }
@@ -239,7 +239,7 @@ public class DungeonGenerator : MonoBehaviour
         List<Triangle> triangleList = DelaunayTriangulation.TriangulateByFlippingEdges(pointList);
 
         ///
-        DrawTriangles(triangleList);
+        //DrawTriangles(triangleList);
 
         return triangleList;
     }
@@ -277,7 +277,7 @@ public class DungeonGenerator : MonoBehaviour
         Graph<int> mstGraph = mst.Prim(graph);
 
         ///
-        DrawSpanningTree(mstGraph);
+        //DrawSpanningTree(mstGraph);
 
         return mstGraph;
     }
@@ -332,7 +332,7 @@ public class DungeonGenerator : MonoBehaviour
             isPickedList[index] = true;
 
             ///
-            Debug.DrawLine(allRoomList[v1List[index]].center, allRoomList[v2List[index]].center, Color.green, 100f);
+            //Debug.DrawLine(allRoomList[v1List[index]].center, allRoomList[v2List[index]].center, Color.green, 100f);
         }
     }
 
@@ -389,7 +389,7 @@ public class DungeonGenerator : MonoBehaviour
         end = new Vector2(MathUtils.RoundToGrid(end.x), MathUtils.RoundToGrid(end.y));
         Line line = new Line(start, end);
         corridorLineList.Add(line);
-        Debug.DrawLine(start, end, Color.blue, 100f);
+        //Debug.DrawLine(start, end, Color.blue, 100f);
     }
 
     private void PruneRoom()
@@ -553,12 +553,12 @@ public class DungeonGenerator : MonoBehaviour
         GameObject tileGO;
         if (isWall)
         {
-            tileGO = Instantiate(wallPrefabs[0], position, Quaternion.identity, root.transform);
+            tileGO = Instantiate(wallTileSO.tilePrefabList[0], position, Quaternion.identity, root.transform);
             corridorRoom.wallGOList.Add(tileGO);
         }
         else
         {
-            tileGO = Instantiate(floorPrefabs[0], position, Quaternion.identity, root.transform);
+            tileGO = Instantiate(floorTileSO.tilePrefabList[0], position, Quaternion.identity, root.transform);
             corridorRoom.floorGOList.Add(tileGO);
         }
         tileGO.AddComponent<BoxCollider2D>();
