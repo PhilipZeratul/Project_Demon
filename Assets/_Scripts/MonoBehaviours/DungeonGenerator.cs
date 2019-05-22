@@ -91,6 +91,9 @@ public class DungeonGenerator : MonoBehaviour
         ChangeCollider();
         yield return waitForFixedUpdate;
         BuildCorridor();
+        yield return waitForFixedUpdate;
+        RemoveFloorCollider();
+        yield return waitForFixedUpdate;
     }
 
     private void GenerateRoom()
@@ -401,7 +404,8 @@ public class DungeonGenerator : MonoBehaviour
             for (int j = 0; j < hitNum; j++)
             {
                 int roomID = hitList[j].transform.GetComponent<DungeonRoomId>().id;
-                if (mainRoomList.Find(room => room.id == roomID) == null)
+                if (mainRoomList.Find(room => room.id == roomID) == null &&
+                    !supportRoomList.Contains(allRoomList[roomID]))
                 {
                     supportRoomList.Add(allRoomList[roomID]);
                 }
@@ -445,11 +449,20 @@ public class DungeonGenerator : MonoBehaviour
         Vector2 hitDirection = Vector2.zero;
         bool isWall;
 
-        foreach (var line in corridorLineList)
+        for (int k = 0; k < corridorLineList.Count; k++)
         {
+            var line = corridorLineList[k];
             GameObject corridorRoot = new GameObject("corridorRoot");
             corridorRoot.transform.position = line.Center();
             corridorRoot.transform.SetParent(corridorHolder.transform);
+            DungeonRoom corridorRoom = new DungeonRoom
+            {
+                id = 100 + k,
+                center = line.Center(),
+                width = (int)(line.End.x - line.Start.x),
+                height = (int)(line.End.y - line.Start.y),
+                root = corridorRoot
+            };
 
             if (line.IsHorizontal())
             {
@@ -477,14 +490,14 @@ public class DungeonGenerator : MonoBehaviour
                         int hitNum = Physics2D.RaycastNonAlloc(position, hitDirection, hits);
                         if (hitNum == 0)
                         {
-                            SpawnCorridorTile(position, isWall, corridorRoot);
+                            SpawnCorridorTile(position, isWall, corridorRoot, ref corridorRoom);
                         }
                         else
                         {
                             if (hits[0].collider.GetComponent<DungeonWall>())
                             {
                                 Destroy(hits[0].collider.gameObject);
-                                SpawnCorridorTile(position, isWall, corridorRoot);
+                                SpawnCorridorTile(position, isWall, corridorRoot, ref corridorRoom);
                             }
                         }
                     }
@@ -516,29 +529,49 @@ public class DungeonGenerator : MonoBehaviour
                         int hitNum = Physics2D.RaycastNonAlloc(position, hitDirection, hits);
                         if (hitNum == 0)
                         {
-                            SpawnCorridorTile(position, isWall, corridorRoot);
+                            SpawnCorridorTile(position, isWall, corridorRoot, ref corridorRoom);
                         }
                         else
                         {
                             if (hits[0].collider.GetComponent<DungeonWall>())
                             {
                                 Destroy(hits[0].collider.gameObject);
-                                SpawnCorridorTile(position, isWall, corridorRoot);
+                                SpawnCorridorTile(position, isWall, corridorRoot, ref corridorRoom);
                             }
                         }
                     }
                 }
             }
+
+            corridorRoomList.Add(corridorRoom);
+            allRoomList.Add(corridorRoom);
         }
     }
 
-    private void SpawnCorridorTile(Vector2 position, bool isWall, GameObject root)
+    private void SpawnCorridorTile(Vector2 position, bool isWall, GameObject root, ref DungeonRoom corridorRoom)
     {
         GameObject tileGO;
         if (isWall)
+        {
             tileGO = Instantiate(wallPrefabs[0], position, Quaternion.identity, root.transform);
+            corridorRoom.wallGOList.Add(tileGO);
+        }
         else
+        {
             tileGO = Instantiate(floorPrefabs[0], position, Quaternion.identity, root.transform);
+            corridorRoom.floorGOList.Add(tileGO);
+        }
         tileGO.AddComponent<BoxCollider2D>();
+    }
+
+    private void RemoveFloorCollider()
+    {
+        foreach (var room in allRoomList)
+        {
+            foreach (var floor in room.floorGOList)
+            {
+                Destroy(floor.GetComponent<Collider2D>());
+            }
+        }
     }
 }
