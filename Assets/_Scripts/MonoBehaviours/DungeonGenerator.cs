@@ -72,6 +72,7 @@ public class DungeonGenerator : MonoBehaviour
     private List<DungeonRoom> corridorRoomList = new List<DungeonRoom>();
     private List<Line> corridorLineList = new List<Line>();
     private readonly WaitForFixedUpdate waitForFixedUpdate = new WaitForFixedUpdate();
+    private readonly WaitForSeconds waitForSpawn = new WaitForSeconds(0.2f);
 
 
     private IEnumerator Start()
@@ -88,6 +89,7 @@ public class DungeonGenerator : MonoBehaviour
         GenerateCorridorLine(graph);
         PruneRoom();
         ChangeCollider();
+        yield return waitForFixedUpdate;
         BuildCorridor();
     }
 
@@ -425,6 +427,7 @@ public class DungeonGenerator : MonoBehaviour
         foreach (var room in allRoomList)
         {
             Destroy(room.root.GetComponent<Collider2D>());
+            Destroy(room.root.GetComponent<Rigidbody2D>());
             foreach (var floorGO in room.floorGOList)
             {
                 floorGO.AddComponent<BoxCollider2D>();
@@ -438,8 +441,9 @@ public class DungeonGenerator : MonoBehaviour
 
     private void BuildCorridor()
     {
-        float circleRadius = Constants.MapInfo.GridSize / 4f;
-        ContactFilter2D filter2D = new ContactFilter2D();
+        RaycastHit2D[] hits = new RaycastHit2D[1];
+        Vector2 hitDirection = Vector2.zero;
+        bool isWall;
 
         foreach (var line in corridorLineList)
         {
@@ -449,59 +453,89 @@ public class DungeonGenerator : MonoBehaviour
 
             if (line.IsHorizontal())
             {
-                for (float x = line.Start.x - 2 * Constants.MapInfo.GridSize;
-                           x < line.End.x + 3 * Constants.MapInfo.GridSize;
+                for (float x = line.Start.x - 2f * Constants.MapInfo.GridSize;
+                           x < line.End.x + 2.5f * Constants.MapInfo.GridSize;
                            x += Constants.MapInfo.GridSize)
                 {
                     float[] y = new float[5];
-                    y[0] = line.Start.y - 2 * Constants.MapInfo.GridSize; // Wall
-                    y[1] = line.Start.y - Constants.MapInfo.GridSize;     // Floor
-                    y[2] = line.Start.y;                                  // Floor
-                    y[3] = line.Start.y + Constants.MapInfo.GridSize;     // Floor
-                    y[4] = line.Start.y + 2 * Constants.MapInfo.GridSize; // Wall
+                    y[0] = line.Start.y - 2f * Constants.MapInfo.GridSize; // Wall
+                    y[1] = line.Start.y - Constants.MapInfo.GridSize;      // Floor
+                    y[2] = line.Start.y;                                   // Floor
+                    y[3] = line.Start.y + Constants.MapInfo.GridSize;      // Floor
+                    y[4] = line.Start.y + 2f * Constants.MapInfo.GridSize; // Wall
 
                     for (int i = 0; i < y.Length; i++)
                     {
+                        if (i == 0 || i == 4 ||
+                            MathUtils.NearlyEqual(x, line.Start.x - 2f * Constants.MapInfo.GridSize) ||
+                            MathUtils.NearlyEqual(x, line.End.x + 2f * Constants.MapInfo.GridSize))
+                            isWall = true;
+                        else
+                            isWall = false;
+
                         Vector2 position = new Vector2(x, y[i]);
-
-
-                        Debug.LogFormat("x = {0}, y = {1}", x, y[i]);
-
-
-                        List<Collider2D> colliderList = new List<Collider2D>();
-                        //int hitNum = Physics2D.BoxCast(position, boxSize, 0f, Vector2.right, filter2D.NoFilter(), hitList, 0.01f);
-                        int hitNum = Physics2D.OverlapCircle(position, circleRadius, filter2D.NoFilter(), colliderList);
-                        //Debug.LogFormat("hitNum = {0}", hitNum);
+                        int hitNum = Physics2D.RaycastNonAlloc(position, hitDirection, hits);
                         if (hitNum == 0)
                         {
-                            SpawnCorridorTile(position, i, corridorRoot);
+                            SpawnCorridorTile(position, isWall, corridorRoot);
                         }
                         else
                         {
-                            //foreach (var hit in colliderList)
-                            //{
-                            //    if (hit.GetComponent<DungeonWall>())
-                            //    {
-                            //        Destroy(hit.gameObject);
-                            //        SpawnCorridorTile(position, i, corridorRoot);
-                            //    }
-                            //}
+                            if (hits[0].collider.GetComponent<DungeonWall>())
+                            {
+                                Destroy(hits[0].collider.gameObject);
+                                SpawnCorridorTile(position, isWall, corridorRoot);
+                            }
                         }
-
                     }
                 }
             }
             else if (line.IsVertical())
             {
+                for (float y = line.Start.y - 2f * Constants.MapInfo.GridSize;
+                           y < line.End.y + 2.5f * Constants.MapInfo.GridSize;
+                           y += Constants.MapInfo.GridSize)
+                {
+                    float[] x = new float[5];
+                    x[0] = line.Start.x - 2f * Constants.MapInfo.GridSize; // Wall
+                    x[1] = line.Start.x - Constants.MapInfo.GridSize;      // Floor
+                    x[2] = line.Start.x;                                   // Floor
+                    x[3] = line.Start.x + Constants.MapInfo.GridSize;      // Floor
+                    x[4] = line.Start.x + 2f * Constants.MapInfo.GridSize; // Wall
 
+                    for (int i = 0; i < x.Length; i++)
+                    {
+                        if (i == 0 || i == 4 ||
+                            MathUtils.NearlyEqual(y, line.Start.y - 2f * Constants.MapInfo.GridSize) ||
+                            MathUtils.NearlyEqual(y, line.End.y + 2f * Constants.MapInfo.GridSize))
+                            isWall = true;
+                        else
+                            isWall = false;
+
+                        Vector2 position = new Vector2(x[i], y);
+                        int hitNum = Physics2D.RaycastNonAlloc(position, hitDirection, hits);
+                        if (hitNum == 0)
+                        {
+                            SpawnCorridorTile(position, isWall, corridorRoot);
+                        }
+                        else
+                        {
+                            if (hits[0].collider.GetComponent<DungeonWall>())
+                            {
+                                Destroy(hits[0].collider.gameObject);
+                                SpawnCorridorTile(position, isWall, corridorRoot);
+                            }
+                        }
+                    }
+                }
             }
         }
     }
 
-    private void SpawnCorridorTile(Vector2 position, int i, GameObject root)
+    private void SpawnCorridorTile(Vector2 position, bool isWall, GameObject root)
     {
         GameObject tileGO;
-        if (i == 0 || i == 4)
+        if (isWall)
             tileGO = Instantiate(wallPrefabs[0], position, Quaternion.identity, root.transform);
         else
             tileGO = Instantiate(floorPrefabs[0], position, Quaternion.identity, root.transform);
