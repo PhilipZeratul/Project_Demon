@@ -1,16 +1,13 @@
 ﻿using UnityEngine;
+using UnityEngine.InputSystem;
 
 
 public class InputManager : MonoBehaviour
 {
-    // Use this for initialization
-    void Start()
-    {
+    public PlayerControls controls;
 
-    }
 
-    // Update is called once per frame
-    void Update()
+    private void Update()
     {
 
     }
