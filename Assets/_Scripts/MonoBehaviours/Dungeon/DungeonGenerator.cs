@@ -7,16 +7,18 @@ using MinimumSpanningTree;
 
 public class DungeonGenerator : MonoBehaviour
 {
-    public IntRange numOfRooms = new IntRange(5, 20);
-    public IntRange roomWidth = new IntRange(3, 10);
-    public IntRange roomHeight = new IntRange(3, 10);
-    [Range(0f, 1f)]
-    public float edgeAddBackRatio = 0.1f;
+    public bool IsGenerationFinished { get; private set; }
 
-    public GameObject roomHolder;
-    public GameObject corridorHolder;
-    public TileSO floorTileSO;
-    public TileSO wallTileSO;
+    [SerializeField] private IntRange numOfRooms = new IntRange(5, 20);
+    [SerializeField] private IntRange roomWidth = new IntRange(3, 10);
+    [SerializeField] private IntRange roomHeight = new IntRange(3, 10);
+    [Range(0f, 1f)]
+    [SerializeField] private readonly float edgeAddBackRatio = 0.1f;
+
+    [SerializeField] private GameObject roomHolder;
+    [SerializeField] private GameObject corridorHolder;
+    [SerializeField] private TileSO floorTileSO;
+    [SerializeField] private TileSO wallTileSO;
 
     private class DungeonRoom
     {
@@ -75,10 +77,12 @@ public class DungeonGenerator : MonoBehaviour
     private readonly WaitForSeconds waitForSpawn = new WaitForSeconds(0.2f);
 
 
-    private IEnumerator Start()
+    public IEnumerator GenerateDungeon()
     {
+        IsGenerationFinished = false;
+
         GenerateRoom();
-        SpawnMap();
+        SpawnRoomGO();
         yield return StartCoroutine(WaitForRigidbody());
         RoundRoomPositionToGrid();
         UpdateRoomInfo();
@@ -94,6 +98,8 @@ public class DungeonGenerator : MonoBehaviour
         yield return waitForFixedUpdate;
         RemoveFloorCollider();
         yield return waitForFixedUpdate;
+
+        IsGenerationFinished = true;
     }
 
     private void GenerateRoom()
@@ -116,7 +122,7 @@ public class DungeonGenerator : MonoBehaviour
         }
     }
 
-    private void SpawnMap()
+    private void SpawnRoomGO()
     {
         for (int i = 0;  i < allRoomList.Count; i++)
         {
@@ -573,5 +579,28 @@ public class DungeonGenerator : MonoBehaviour
                 Destroy(floor.GetComponent<Collider2D>());
             }
         }
+    }
+
+    private IEnumerator ClearAll()
+    {
+        IsGenerationFinished = false;
+
+        allRoomList.Clear();
+        mainRoomList.Clear();
+        supportRoomList.Clear();
+        corridorRoomList.Clear();
+        corridorLineList.Clear();
+
+        foreach (Transform child in roomHolder.transform)
+        {
+            Destroy(child);
+        }
+
+        foreach (Transform child in corridorHolder.transform)
+        {
+            Destroy(child);
+        }
+
+        yield return waitForFixedUpdate;
     }
 }

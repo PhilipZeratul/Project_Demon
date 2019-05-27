@@ -76,7 +76,11 @@ public class SceneReference : ISerializationCallbackReceiver
     {
         get
         {
+#if UNITY_EDITOR
             return sceneAsset.name;
+#else
+            return UnityEngine.SceneManagement.SceneManager.GetSceneByPath(ScenePath).name;
+#endif
         }
     }
 
