@@ -1,18 +1,16 @@
 ﻿using UnityEngine;
+using UnityEngine.SceneManagement;
+using System.Collections.Generic;
 using Zenject;
 
 
 public class GameManager : MonoBehaviour
 {
-    // Use this for initialization
-    void Start()
+    public List<SceneReference> SceneList = new List<SceneReference>();
+
+
+    private void Start()
     {
-
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
+        SceneManager.LoadSceneAsync(SceneList[0].ScenePath, LoadSceneMode.Additive);
     }
 }

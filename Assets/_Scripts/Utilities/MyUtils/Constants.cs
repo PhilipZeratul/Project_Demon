@@ -6,4 +6,9 @@
         public const float MainRoomThreshold = 1.1f;
         public const float TriangleThreshold = 23f;
     }
+
+    public static class InjectID
+    {
+        public const string Player = "Player";
+    }
 }

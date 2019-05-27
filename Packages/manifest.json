@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "com.unity.2d.pixel-perfect": "1.0.1-preview",
     "com.unity.analytics": "3.3.2",
     "com.unity.burst": "1.0.4",
     "com.unity.inputsystem": "0.2.10-preview",

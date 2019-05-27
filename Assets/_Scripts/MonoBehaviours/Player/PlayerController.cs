@@ -8,10 +8,8 @@ public class PlayerController : MonoBehaviour
     public FloatRange walkSpeed;
     public float accleration;
 
-
     private PhysicsObject physicsObject;
 
-    PlayerControls controls;
 
     private void Awake()
     {

@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
+using UnityEngine;
 
 
 namespace MinimumSpanningTree
 {
     public class MST<T>
     {
-        private readonly float INF = float.MaxValue - 1;
+        private readonly float INF = float.MaxValue - 1f;
 
 
         public Graph<T> Prim(Graph<T> oriGraph)
@@ -18,7 +19,7 @@ namespace MinimumSpanningTree
                 nodeWeightPair.Add(node, INF);
             nodeWeightPair[graph.NodeList[0]] = 0f;
 
-            Dictionary<Graph<T>.Node, Graph<T>.Node> tree = new Dictionary<Graph<T>.Node, Graph<T>.Node>();
+            Dictionary<Graph<T>.Node, Graph<T>.Node> resultTree = new Dictionary<Graph<T>.Node, Graph<T>.Node>();
 
             while (graph.Count() > 0)
             {
@@ -28,27 +29,27 @@ namespace MinimumSpanningTree
                     if (graph.ContainsContext(neighborNode.Context) && (minNode.GetWeight(neighborNode) <= nodeWeightPair[neighborNode]))
                     {
                         nodeWeightPair[neighborNode] = minNode.GetWeight(neighborNode);
-                        tree[neighborNode] = minNode; // neighborNode is child, minNode is parent.
+                        resultTree[neighborNode] = minNode; // neighborNode is child, minNode is parent.
                     }
                 }
             }
-            foreach (var childNode in tree.Keys)
-                resultGraph.AddEdge(tree[childNode].Context, childNode.Context, 1f);
+            foreach (var childNode in resultTree.Keys)
+                resultGraph.AddEdge(resultTree[childNode].Context, childNode.Context, 1f);
 
             return resultGraph;
         }
 
-        private Graph<T>.Node FindMinNodeAndDelete(Graph<T> graph, Dictionary<Graph<T>.Node, float> keys)
+        private Graph<T>.Node FindMinNodeAndDelete(Graph<T> graph, Dictionary<Graph<T>.Node, float> nodeWeightPair)
         {
             Graph<T>.Node minNode = null;
             float minWeight = INF;
 
             foreach (var node in graph.NodeList)
             {
-                if (keys[node] < minWeight)
+                if (nodeWeightPair[node] <= minWeight)
                 {
                     minNode = node;
-                    minWeight = keys[node];
+                    minWeight = nodeWeightPair[node];
                 }
             }
             graph.RemoveNode(minNode);
