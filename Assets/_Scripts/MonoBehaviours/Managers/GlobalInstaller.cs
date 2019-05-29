@@ -13,6 +13,9 @@ public class GlobalInstaller : MonoInstaller<GlobalInstaller>
         //Debug.Log("Global Installer Binding.");
 
         Container.Bind<GameManager>().FromInstance(Instantiate(GameManager)).AsSingle();
-        Container.Bind<GameObject>().WithId(Constants.InjectID.Player).FromInstance(Instantiate(player)).AsSingle();
+
+        GameObject playerGO = Instantiate(player);
+        playerGO.SetActive(false);
+        Container.Bind<GameObject>().WithId(Constants.InjectID.Player).FromInstance(playerGO).AsSingle();
     }
 }

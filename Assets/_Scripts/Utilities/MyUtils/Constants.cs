@@ -11,4 +11,13 @@
     {
         public const string Player = "Player";
     }
+
+    public enum DungeonRoomType
+    {
+        NA,  // Not Assigned
+        Entry,
+        Boss,
+        Shop,
+        MiniBoss
+    }
 }

@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TriangulationMethods;
@@ -8,6 +9,7 @@ using MinimumSpanningTree;
 public class DungeonGenerator : MonoBehaviour
 {
     public bool IsGenerationFinished { get; private set; }
+    public Action GenerationFinished;
 
     [SerializeField] private IntRange numOfRooms = new IntRange(5, 20);
     [SerializeField] private IntRange roomWidth = new IntRange(3, 10);
@@ -29,6 +31,7 @@ public class DungeonGenerator : MonoBehaviour
         public GameObject root;
         public List<GameObject> floorGOList = new List<GameObject>();
         public List<GameObject> wallGOList = new List<GameObject>();
+        public Constants.DungeonRoomType type = Constants.DungeonRoomType.NA;
     }
 
     private class Line
@@ -100,6 +103,7 @@ public class DungeonGenerator : MonoBehaviour
         yield return waitForFixedUpdate;
 
         IsGenerationFinished = true;
+        GenerationFinished?.Invoke();
     }
 
     private void GenerateRoom()

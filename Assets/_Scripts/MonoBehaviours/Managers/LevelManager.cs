@@ -1,14 +1,31 @@
 ﻿using UnityEngine;
-using System.Collections;
+using Zenject;
 
 
 public class LevelManager : MonoBehaviour
 {
-    public DungeonGenerator dungeonGenerator;
+    private DungeonGenerator dungeonGenerator;
 
+
+    [Inject]
+    private void Init(DungeonGenerator _dungeonGenerator)
+    {
+        dungeonGenerator = _dungeonGenerator;
+    }
 
     private void Start()
     {
+        dungeonGenerator.GenerationFinished += DungeonGenerated;
         StartCoroutine(dungeonGenerator.GenerateDungeon());
+    }
+
+    private void DungeonGenerated()
+    {
+        Debug.Log("DungeonGenerated");
+    }
+
+    private void OnDestroy()
+    {
+        dungeonGenerator.GenerationFinished -= DungeonGenerated;
     }
 }
