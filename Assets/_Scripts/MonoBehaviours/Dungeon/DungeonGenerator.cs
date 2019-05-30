@@ -8,6 +8,11 @@ using MinimumSpanningTree;
 
 public class DungeonGenerator : MonoBehaviour
 {
+    public List<DungeonRoom> allRoomList = new List<DungeonRoom>();
+    public List<DungeonRoom> mainRoomList = new List<DungeonRoom>();
+    public List<DungeonRoom> supportRoomList = new List<DungeonRoom>();
+    public List<DungeonRoom> corridorRoomList = new List<DungeonRoom>();
+
     public bool IsGenerationFinished { get; private set; }
     public Action GenerationFinished;
 
@@ -21,18 +26,6 @@ public class DungeonGenerator : MonoBehaviour
     [SerializeField] private GameObject corridorHolder;
     [SerializeField] private TileSO floorTileSO;
     [SerializeField] private TileSO wallTileSO;
-
-    private class DungeonRoom
-    {
-        public int id;
-        public Vector2 center;
-        public int width;
-        public int height;
-        public GameObject root;
-        public List<GameObject> floorGOList = new List<GameObject>();
-        public List<GameObject> wallGOList = new List<GameObject>();
-        public Constants.DungeonRoomType type = Constants.DungeonRoomType.NA;
-    }
 
     private class Line
     {
@@ -71,10 +64,6 @@ public class DungeonGenerator : MonoBehaviour
         }
     }
 
-    private List<DungeonRoom> allRoomList = new List<DungeonRoom>();
-    private List<DungeonRoom> mainRoomList = new List<DungeonRoom>();
-    private List<DungeonRoom> supportRoomList = new List<DungeonRoom>();
-    private List<DungeonRoom> corridorRoomList = new List<DungeonRoom>();
     private List<Line> corridorLineList = new List<Line>();
     private readonly WaitForFixedUpdate waitForFixedUpdate = new WaitForFixedUpdate();
     private readonly WaitForSeconds waitForSpawn = new WaitForSeconds(0.2f);
@@ -93,6 +82,7 @@ public class DungeonGenerator : MonoBehaviour
         List<Triangle> triangleList = Triangulation();
         Graph<int> graph = SpanningTree(triangleList);
         AddBackEdges(triangleList, ref graph);
+        UpdateMainRoomConnection(ref graph);
         GenerateCorridorLine(graph);
         PruneRoom();
         ChangeCollider();
@@ -104,6 +94,12 @@ public class DungeonGenerator : MonoBehaviour
 
         IsGenerationFinished = true;
         GenerationFinished?.Invoke();
+    }
+
+    public IEnumerator ReGenerateDungeon()
+    {
+        yield return StartCoroutine(ClearAll());
+        StartCoroutine(GenerateDungeon());
     }
 
     private void GenerateRoom()
@@ -335,6 +331,7 @@ public class DungeonGenerator : MonoBehaviour
         int index = MathUtils.rnd.Next(0, v1List.Count);
         for (int i = 0; i < v1List.Count * edgeAddBackRatio; i++)
         {
+            // Get an index that is not picked.
             while (isPickedList[index])
                 index = MathUtils.rnd.Next(0, v1List.Count);
 
@@ -343,6 +340,17 @@ public class DungeonGenerator : MonoBehaviour
 
             ///
             //Debug.DrawLine(allRoomList[v1List[index]].center, allRoomList[v2List[index]].center, Color.green, 100f);
+        }
+    }
+
+    private void UpdateMainRoomConnection(ref Graph<int> graph)
+    {
+        foreach (var node in graph.NodeList)
+        {
+            foreach (var edge in node.EdgeList)
+            {
+                allRoomList[node.Context].connectedIdList.Add(edge.Next.Context);
+            }
         }
     }
 
@@ -402,6 +410,7 @@ public class DungeonGenerator : MonoBehaviour
         //Debug.DrawLine(start, end, Color.blue, 100f);
     }
 
+    // allRoomList index dose not equal to room id after PruneRoom().
     private void PruneRoom()
     {
         // Find support rooms.
@@ -597,12 +606,12 @@ public class DungeonGenerator : MonoBehaviour
 
         foreach (Transform child in roomHolder.transform)
         {
-            Destroy(child);
+            Destroy(child.gameObject);
         }
 
         foreach (Transform child in corridorHolder.transform)
         {
-            Destroy(child);
+            Destroy(child.gameObject);
         }
 
         yield return waitForFixedUpdate;
