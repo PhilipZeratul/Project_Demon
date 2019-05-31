@@ -457,7 +457,8 @@ public class DungeonGenerator : MonoBehaviour
             }
             foreach (var wallGO in room.wallGOList)
             {
-                wallGO.AddComponent<BoxCollider2D>();
+                Collider2D collider2d = wallGO.AddComponent<BoxCollider2D>();
+                collider2d.usedByComposite = true;
             }
         }
     }
@@ -574,13 +575,16 @@ public class DungeonGenerator : MonoBehaviour
         {
             tileGO = Instantiate(wallTileSO.tilePrefabList[0], position, Quaternion.identity, root.transform);
             corridorRoom.wallGOList.Add(tileGO);
+            Collider2D collider2d = tileGO.AddComponent<BoxCollider2D>();
+            collider2d.usedByComposite = true;
         }
         else
         {
             tileGO = Instantiate(floorTileSO.tilePrefabList[0], position, Quaternion.identity, root.transform);
             corridorRoom.floorGOList.Add(tileGO);
+            tileGO.AddComponent<BoxCollider2D>();
         }
-        tileGO.AddComponent<BoxCollider2D>();
+
     }
 
     private void RemoveFloorCollider()

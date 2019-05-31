@@ -13,13 +13,17 @@ public class PlayerController : MonoBehaviour
 
     private void Awake()
     {
-        //controls.Player.Move.performed += ctx => Movement(ctx.ReadValue<Vector2>());
         physicsObject = GetComponent<PhysicsObject>();
     }
 
+    // Binded by Unity Event in the editor
     public void Movement(InputAction.CallbackContext ctx)
     {
         Vector2 input = ctx.ReadValue<Vector2>();
-        physicsObject.Move(input.x, input.y);
+
+        float velocityX = input.x * walkSpeed.min;
+        float velocityY = input.y * walkSpeed.min;
+
+        physicsObject.Move(velocityX, velocityY);
     }
 }

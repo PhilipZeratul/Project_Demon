@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using UnityEngine;
+using System;
 
 
 public class DungeonEnricher
@@ -7,24 +7,20 @@ public class DungeonEnricher
     public bool IsEnrichFinished { get; private set; }
     public Action EnrichFinished;
 
-    private List<DungeonRoom> allRoomList;
-    private List<DungeonRoom> mainRoomList;
-    private List<DungeonRoom> supportRoomList;
-    private List<DungeonRoom> corridorRoomList;
+    private DungeonGenerator dungeonGenerator;
+
 
     public DungeonEnricher(DungeonGenerator dungeonGenerator)
     {
         IsEnrichFinished = false;
-        allRoomList = dungeonGenerator.allRoomList;
-        mainRoomList = dungeonGenerator.mainRoomList;
-        supportRoomList = dungeonGenerator.supportRoomList;
-        corridorRoomList = dungeonGenerator.corridorRoomList;
+        this.dungeonGenerator = dungeonGenerator;
     }
 
     public void Enrich()
     {
         IsEnrichFinished = false;
         SetMainRoomFunc();
+        GenerateCompositeCollider();
         IsEnrichFinished = true;
         EnrichFinished?.Invoke();
     }
@@ -42,11 +38,11 @@ public class DungeonEnricher
         bool isDone = false;
         while (!isDone)
         {
-            int index = MathUtils.rnd.Next(0, mainRoomList.Count);
-            if (mainRoomList[index].type == Constants.DungeonRoomType.NA &&
-                mainRoomList[index].connectedIdList.Count >= 2)
+            int index = MathUtils.rnd.Next(0, dungeonGenerator.mainRoomList.Count);
+            if (dungeonGenerator.mainRoomList[index].type == Constants.DungeonRoomType.NA &&
+                dungeonGenerator.mainRoomList[index].connectedIdList.Count >= 2)
             {
-                mainRoomList[index].type = Constants.DungeonRoomType.Entry;
+                dungeonGenerator.mainRoomList[index].type = Constants.DungeonRoomType.Entry;
                 isDone = true;
             }
         }
@@ -57,12 +53,19 @@ public class DungeonEnricher
         bool isDone = false;
         while (!isDone)
         {
-            int index = MathUtils.rnd.Next(0, mainRoomList.Count);
-            if (mainRoomList[index].type == Constants.DungeonRoomType.NA)
+            int index = MathUtils.rnd.Next(0, dungeonGenerator.mainRoomList.Count);
+            if (dungeonGenerator.mainRoomList[index].type == Constants.DungeonRoomType.NA)
             {
-                mainRoomList[index].type = type;
+                dungeonGenerator.mainRoomList[index].type = type;
                 isDone = true;
             }
         }
+    }
+
+    private void GenerateCompositeCollider()
+    {
+        Rigidbody2D rigidbody2d = dungeonGenerator.gameObject.AddComponent<Rigidbody2D>();
+        rigidbody2d.bodyType = RigidbodyType2D.Kinematic;
+        dungeonGenerator.gameObject.AddComponent<CompositeCollider2D>();
     }
 }

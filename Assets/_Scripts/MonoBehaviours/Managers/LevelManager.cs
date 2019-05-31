@@ -43,6 +43,7 @@ public class LevelManager : MonoBehaviour
 
     private void DungeonEnriched()
     {
+        // Place the player at center of level entry.
         player.transform.position = dungeonGenerator.mainRoomList.Find(n => n.type == Constants.DungeonRoomType.Entry).center;
         player.SetActive(true);
     }
