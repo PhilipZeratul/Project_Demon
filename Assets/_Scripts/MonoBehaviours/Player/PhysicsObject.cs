@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 
 
+[RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(Collider2D))]
 public class PhysicsObject : MonoBehaviour
 {
@@ -11,6 +12,7 @@ public class PhysicsObject : MonoBehaviour
     [SerializeField]
     private float pushMultiplier = 0.1f;
 
+    private Rigidbody2D rigidbody2d;
     private Collider2D collider2d;
     private ContactFilter2D filter;
     private readonly List<Collider2D> contactColliderList = new List<Collider2D>();
@@ -19,6 +21,7 @@ public class PhysicsObject : MonoBehaviour
 
     private void Awake()
     {
+        rigidbody2d = GetComponent<Rigidbody2D>();
         collider2d = GetComponent<Collider2D>();
 
         filter.useTriggers = false;
@@ -33,11 +36,11 @@ public class PhysicsObject : MonoBehaviour
         float deltaY = VelocityY * fixedDeltaTime;
 
 
+        rigidbody2d.velocity = new Vector2(VelocityX, VelocityY);
 
+        //ResolveCollision(ref deltaX, ref deltaY);
 
-        ResolveCollision(ref deltaX, ref deltaY);
-
-        transform.Translate(deltaX, deltaY, 0f);
+        //transform.Translate(deltaX, deltaY, 0f);
     }
 
     public void Move(float velocityX, float velocityY)
