@@ -64,7 +64,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5ec922f79a6dd442a9993807de573988, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pushMultiplier: 0.1
 --- !u!114 &2027646803
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -78,8 +77,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   walkSpeed:
-    min: 3
-    max: 5
+    min: 5
+    max: 8
   accleration: 0
 --- !u!114 &5820745131451623589
 MonoBehaviour:
