@@ -205,6 +205,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   dungeonGenerator: {fileID: 1452847394}
+  dungeonEnricher: {fileID: 1452847396}
 --- !u!1 &842410057
 GameObject:
   m_ObjectHideFlags: 0
@@ -291,6 +292,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1452847395}
   - component: {fileID: 1452847394}
+  - component: {fileID: 1452847396}
   m_Layer: 0
   m_Name: DungeonGenerator
   m_TagString: Untagged
@@ -339,6 +341,19 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1452847396
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1452847393}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ac588bfd9471241ebab1350b6f7e824f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  floorTilemapSO: {fileID: 11400000, guid: 617045f3accda4ff5863d20b9f109a99, type: 2}
 --- !u!1 &1657829517
 GameObject:
   m_ObjectHideFlags: 0

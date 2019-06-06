@@ -461,7 +461,6 @@ public class DungeonGenerator : MonoBehaviour
             foreach (var wallTile in room.wallTlieList)
             {
                 collider2d = wallTile.go.AddComponent<BoxCollider2D>();
-                collider2d.usedByComposite = true;
                 wallTile.collider2d = collider2d;
             }
         }
@@ -566,10 +565,9 @@ public class DungeonGenerator : MonoBehaviour
                     }
                 }
             }
-
             corridorRoomList.Add(corridorRoom);
-            allRoomList.Add(corridorRoom);
         }
+        allRoomList.AddRange(corridorRoomList);
     }
 
     private void SpawnCorridorTile(Vector2 position, bool isWall, GameObject root, ref DungeonRoom corridorRoom)
@@ -581,7 +579,6 @@ public class DungeonGenerator : MonoBehaviour
             tileGO = Instantiate(wallTileSO.tilePrefabList[0], position, Quaternion.identity, root.transform);
             DungeonRoom.Tile tile = new DungeonRoom.Tile(tileGO);
             collider2d = tileGO.AddComponent<BoxCollider2D>();
-            collider2d.usedByComposite = true;
             tile.collider2d = collider2d;
             corridorRoom.wallTlieList.Add(tile);
         }

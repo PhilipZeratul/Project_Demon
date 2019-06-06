@@ -4,6 +4,7 @@
 public class DungeonSceneInstaller : MonoInstaller<DungeonSceneInstaller>
 {
     public DungeonGenerator dungeonGenerator;
+    public DungeonEnricher dungeonEnricher;
 
 
     public override void InstallBindings()
@@ -11,5 +12,6 @@ public class DungeonSceneInstaller : MonoInstaller<DungeonSceneInstaller>
         //Debug.Log("Dungeon Scene Installer Binding.");
 
         Container.Bind<DungeonGenerator>().FromInstance(dungeonGenerator).AsSingle();
+        Container.Bind<DungeonEnricher>().FromInstance(dungeonEnricher).AsSingle();
     }
 }

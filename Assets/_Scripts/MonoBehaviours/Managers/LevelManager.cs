@@ -7,14 +7,17 @@ public class LevelManager : MonoBehaviour
     [SerializeField] private IntRange numOfMainRooms = new IntRange(4, 10);
 
     private DungeonGenerator dungeonGenerator;
+    private DungeonEnricher dungeonEnricher;
     private GameObject player;
 
 
     [Inject]
     private void Init(DungeonGenerator _dungeonGenerator,
+                      DungeonEnricher _dungeonEnricher,
                      [Inject(Id = Constants.InjectID.Player)] GameObject _player)
     {
         dungeonGenerator = _dungeonGenerator;
+        dungeonEnricher = _dungeonEnricher;
         player = _player;
     }
 
@@ -35,7 +38,6 @@ public class LevelManager : MonoBehaviour
         else
         {
             Debug.LogFormat("Dungeon Generated, num of MainRoom = {0}", dungeonGenerator.mainRoomList.Count);
-            DungeonEnricher dungeonEnricher = new DungeonEnricher(dungeonGenerator);
             dungeonEnricher.EnrichFinished += DungeonEnriched;
             StartCoroutine(dungeonEnricher.Enrich());
         }

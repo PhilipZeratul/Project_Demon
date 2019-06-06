@@ -1,21 +1,27 @@
 ﻿using UnityEngine;
 using System;
 using System.Collections;
+using Zenject;
 
 
+[RequireComponent(typeof(DungeonGenerator))]
 public class DungeonEnricher : MonoBehaviour
 {
     public bool IsEnrichFinished { get; private set; }
     public Action EnrichFinished;
 
+    [SerializeField]
+    private TilemapSO floorTilemapSO;
+
     private DungeonGenerator dungeonGenerator;
     private readonly WaitForFixedUpdate waitForFixedUpdate = new WaitForFixedUpdate();
 
 
-    public DungeonEnricher(DungeonGenerator dungeonGenerator)
+    [Inject]
+    private void Init(DungeonGenerator _dungeonGenerator)
     {
+        dungeonGenerator = _dungeonGenerator;
         IsEnrichFinished = false;
-        this.dungeonGenerator = dungeonGenerator;
     }
 
     public IEnumerator Enrich()
@@ -23,9 +29,12 @@ public class DungeonEnricher : MonoBehaviour
         IsEnrichFinished = false;
 
         SetMainRoomFunc();
+        DisableWallColliders();
+        PlaceTileSprite();
         RemoveFloorCollider();
         yield return waitForFixedUpdate;
         GenerateCompositeCollider();
+        yield return waitForFixedUpdate;
 
         IsEnrichFinished = true;
         EnrichFinished?.Invoke();
@@ -106,8 +115,60 @@ public class DungeonEnricher : MonoBehaviour
         }
     }
 
+    private void DisableWallColliders()
+    {
+        foreach (DungeonRoom room in dungeonGenerator.allRoomList)
+        {
+            foreach (DungeonRoom.Tile wallTile in room.wallTlieList)
+            {
+                if (wallTile.go != null)
+                    wallTile.collider2d.isTrigger = true;
+            }
+        }
+    }
+
+    private void PlaceTileSprite()
+    {
+        RaycastHit2D[] hits = new RaycastHit2D[1];
+        int count = 0;
+        int hitNum = 0;
+        Physics2D.queriesHitTriggers = false;
+        Physics2D.queriesStartInColliders = false;
+
+        foreach (var room in dungeonGenerator.allRoomList)
+        {
+            foreach (var floorTile in room.floorTileList)
+            {
+                count = 0;
+                hitNum = Physics2D.RaycastNonAlloc(floorTile.go.transform.position, Vector2.up, hits, Constants.MapInfo.GridSize);
+                if (hitNum > 0) count += 1;
+                hitNum = Physics2D.RaycastNonAlloc(floorTile.go.transform.position, Vector2.left, hits, Constants.MapInfo.GridSize);
+                if (hitNum > 0) count += 2;
+                hitNum = Physics2D.RaycastNonAlloc(floorTile.go.transform.position, Vector2.right, hits, Constants.MapInfo.GridSize);
+                if (hitNum > 0) count += 4;
+                hitNum = Physics2D.RaycastNonAlloc(floorTile.go.transform.position, Vector2.down, hits, Constants.MapInfo.GridSize);
+                if (hitNum > 0) count += 8;
+                floorTile.spriteRenderer.sprite = floorTilemapSO.sprites[count];
+            }
+        }
+        Physics2D.queriesHitTriggers = true;
+        Physics2D.queriesStartInColliders = true;
+    }
+
     private void GenerateCompositeCollider()
     {
+        foreach (var room in dungeonGenerator.allRoomList)
+        {
+            foreach (var wallTile in room.wallTlieList)
+            {
+                if (wallTile.go != null)
+                {
+                    wallTile.collider2d.isTrigger = false;
+                    wallTile.collider2d.usedByComposite = true;
+                }
+            }
+        }
+
         Rigidbody2D rigidbody2d = dungeonGenerator.gameObject.AddComponent<Rigidbody2D>();
         rigidbody2d.bodyType = RigidbodyType2D.Kinematic;
         dungeonGenerator.gameObject.AddComponent<CompositeCollider2D>();
