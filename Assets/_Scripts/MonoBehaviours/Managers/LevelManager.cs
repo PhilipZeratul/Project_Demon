@@ -37,7 +37,7 @@ public class LevelManager : MonoBehaviour
             Debug.LogFormat("Dungeon Generated, num of MainRoom = {0}", dungeonGenerator.mainRoomList.Count);
             DungeonEnricher dungeonEnricher = new DungeonEnricher(dungeonGenerator);
             dungeonEnricher.EnrichFinished += DungeonEnriched;
-            dungeonEnricher.Enrich();
+            StartCoroutine(dungeonEnricher.Enrich());
         }
     }
 

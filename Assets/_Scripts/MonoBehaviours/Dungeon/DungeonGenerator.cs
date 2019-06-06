@@ -65,9 +65,8 @@ public class DungeonGenerator : MonoBehaviour
     }
 
     private List<Line> corridorLineList = new List<Line>();
-    private readonly WaitForFixedUpdate waitForFixedUpdate = new WaitForFixedUpdate();
     private readonly WaitForSeconds waitForSpawn = new WaitForSeconds(0.2f);
-
+    private readonly WaitForFixedUpdate waitForFixedUpdate = new WaitForFixedUpdate();
 
     public IEnumerator GenerateDungeon()
     {
@@ -89,8 +88,7 @@ public class DungeonGenerator : MonoBehaviour
         yield return waitForFixedUpdate;
         BuildCorridor();
         yield return waitForFixedUpdate;
-        RemoveFloorCollider();
-        yield return waitForFixedUpdate;
+
 
         IsGenerationFinished = true;
         GenerationFinished?.Invoke();
@@ -142,12 +140,14 @@ public class DungeonGenerator : MonoBehaviour
                         n == 0 || n == (allRoomList[i].height - Constants.MapInfo.GridSize))
                     {
                         GameObject wallGO = Instantiate(wallTileSO.tilePrefabList[0], position, Quaternion.identity, roomRoot.transform);
-                        allRoomList[i].wallGOList.Add(wallGO);
+                        DungeonRoom.Tile wallTile = new DungeonRoom.Tile(wallGO);
+                        allRoomList[i].wallTlieList.Add(wallTile);
                     }
                     else
                     {
                         GameObject floorGO = Instantiate(floorTileSO.tilePrefabList[0], position, Quaternion.identity, roomRoot.transform);
-                        allRoomList[i].floorGOList.Add(floorGO);
+                        DungeonRoom.Tile floorTile = new DungeonRoom.Tile(floorGO);
+                        allRoomList[i].floorTileList.Add(floorTile);
                     }
                 }
             }
@@ -447,18 +447,22 @@ public class DungeonGenerator : MonoBehaviour
 
     private void ChangeCollider()
     {
+        BoxCollider2D collider2d;
         foreach (var room in allRoomList)
         {
             Destroy(room.root.GetComponent<Collider2D>());
             Destroy(room.root.GetComponent<Rigidbody2D>());
-            foreach (var floorGO in room.floorGOList)
+
+            foreach (var floorTile in room.floorTileList)
             {
-                floorGO.AddComponent<BoxCollider2D>();
+                collider2d = floorTile.go.AddComponent<BoxCollider2D>();
+                floorTile.collider2d = collider2d;
             }
-            foreach (var wallGO in room.wallGOList)
+            foreach (var wallTile in room.wallTlieList)
             {
-                Collider2D collider2d = wallGO.AddComponent<BoxCollider2D>();
+                collider2d = wallTile.go.AddComponent<BoxCollider2D>();
                 collider2d.usedByComposite = true;
+                wallTile.collider2d = collider2d;
             }
         }
     }
@@ -571,31 +575,25 @@ public class DungeonGenerator : MonoBehaviour
     private void SpawnCorridorTile(Vector2 position, bool isWall, GameObject root, ref DungeonRoom corridorRoom)
     {
         GameObject tileGO;
+        Collider2D collider2d;
         if (isWall)
         {
             tileGO = Instantiate(wallTileSO.tilePrefabList[0], position, Quaternion.identity, root.transform);
-            corridorRoom.wallGOList.Add(tileGO);
-            Collider2D collider2d = tileGO.AddComponent<BoxCollider2D>();
+            DungeonRoom.Tile tile = new DungeonRoom.Tile(tileGO);
+            collider2d = tileGO.AddComponent<BoxCollider2D>();
             collider2d.usedByComposite = true;
+            tile.collider2d = collider2d;
+            corridorRoom.wallTlieList.Add(tile);
         }
         else
         {
             tileGO = Instantiate(floorTileSO.tilePrefabList[0], position, Quaternion.identity, root.transform);
-            corridorRoom.floorGOList.Add(tileGO);
-            tileGO.AddComponent<BoxCollider2D>();
+            DungeonRoom.Tile tile = new DungeonRoom.Tile(tileGO);
+            collider2d = tileGO.AddComponent<BoxCollider2D>();
+            tile.collider2d = collider2d;
+            corridorRoom.floorTileList.Add(tile);
         }
 
-    }
-
-    private void RemoveFloorCollider()
-    {
-        foreach (var room in allRoomList)
-        {
-            foreach (var floor in room.floorGOList)
-            {
-                Destroy(floor.GetComponent<Collider2D>());
-            }
-        }
     }
 
     private IEnumerator ClearAll()
