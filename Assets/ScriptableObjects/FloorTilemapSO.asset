@@ -9,23 +9,28 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 39cb4ab4b577f44dda26db3c14f7b965, type: 3}
+  m_Script: {fileID: 11500000, guid: 039db44b3f4bf4279b12a3ff487aaa44, type: 3}
   m_Name: FloorTilemapSO
   m_EditorClassIdentifier: 
-  sprites:
-  - {fileID: 21300000, guid: 225bc6cba56624ad586ee8e50b8ea937, type: 3}
-  - {fileID: 21300000, guid: 02beaf50a278040d8b7edf49faab014d, type: 3}
-  - {fileID: 21300000, guid: 98f45e9a885d94ae9ba9ea38aef531f3, type: 3}
-  - {fileID: 21300000, guid: 0003facbb96ba474ebb8a136405076b8, type: 3}
-  - {fileID: 21300000, guid: 2d7bc612b0a0e4ec6aca27f9285e280c, type: 3}
-  - {fileID: 21300000, guid: 9c203ad82cf67403a94138816d2595fb, type: 3}
-  - {fileID: 21300000, guid: a462254aca33d4d71b56c5f03c735393, type: 3}
-  - {fileID: 21300000, guid: 66380ff2a0c894f72a54986a620a6807, type: 3}
-  - {fileID: 21300000, guid: 0249445e8c4e14de7964f07b247c6e44, type: 3}
-  - {fileID: 21300000, guid: 2cd79397d4ceb4af29d39e630551b0e8, type: 3}
-  - {fileID: 21300000, guid: a0d694aba80e94eb49dd73162b42a870, type: 3}
-  - {fileID: 21300000, guid: ab5db7e6774364d47b9d717af84bf606, type: 3}
-  - {fileID: 21300000, guid: 8209d06b9e02f472096a7c18f8e76b6a, type: 3}
-  - {fileID: 21300000, guid: 2d1c8d1e68d034d41b8500e734abc097, type: 3}
-  - {fileID: 21300000, guid: 593681c22ec9c47c186499a24db78dd9, type: 3}
+  baseSprites:
   - {fileID: 21300000, guid: e074b4ee781a2472db8ad0fed074c202, type: 3}
+  - {fileID: 21300000, guid: 923b15e5689d84da69df575f678d71e8, type: 3}
+  - {fileID: 21300000, guid: 40cdd80c84dab4cd4aa98367148605a2, type: 3}
+  - {fileID: 21300000, guid: c240d66673ef04f0285e5087d5e9b8f6, type: 3}
+  topSprites:
+  - {fileID: 21300000, guid: e4b597e7cb8c449458a0ee4b69936585, type: 3}
+  - {fileID: 21300000, guid: 0cc44c79e8fa44815985d6a8e1b6a360, type: 3}
+  - {fileID: 21300000, guid: 53f1058c1f1bf4e148a528077bf372bc, type: 3}
+  - {fileID: 21300000, guid: 193461c1ddc0f4580acda66bd5d94ea7, type: 3}
+  - {fileID: 21300000, guid: 3ce7989b376804367b64321621428869, type: 3}
+  - {fileID: 21300000, guid: e1c768e566d754564bec23828e5af154, type: 3}
+  - {fileID: 21300000, guid: 855bc7d5d046548deb851b09520f9158, type: 3}
+  - {fileID: 21300000, guid: aa967cc3480b34e58a5b09551c6e2dea, type: 3}
+  - {fileID: 21300000, guid: 9f3301aa02dac4c888273c936f7bdaed, type: 3}
+  - {fileID: 21300000, guid: e52428d9771044d01addc1db981ca0d4, type: 3}
+  - {fileID: 21300000, guid: 73e445973687a4d22a207568beac0949, type: 3}
+  - {fileID: 21300000, guid: a0342992b290e4e6cbbf37b95df696c3, type: 3}
+  - {fileID: 21300000, guid: 7359b0e27d36848eabd2a21e3692275f, type: 3}
+  - {fileID: 21300000, guid: bc155a69af4934a7b83b7aca240ee892, type: 3}
+  - {fileID: 21300000, guid: 1908bd26b5db14f43a32fa006a442306, type: 3}
+  - {fileID: 21300000, guid: a57d25b1e1d5847cb94b897c56c93cdf, type: 3}
