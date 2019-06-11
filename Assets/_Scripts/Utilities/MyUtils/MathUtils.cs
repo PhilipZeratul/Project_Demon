@@ -17,7 +17,20 @@ public static class MathUtils
                            RoundToGrid(radius * r * Mathf.Sin(theta), Constants.MapInfo.GridSize));
     }
 
-    private static float RandomFloatBetween(float minValue, float maxValue)
+    public static Vector2 GetRandomPointInEclipse(float radius, float xScale, float yScale)
+    {
+        Vector2 result = GetRandomPointInCircle(radius);
+        result.x = result.x * xScale;
+        result.y = result.y * yScale;
+        return result;
+    }
+
+    public static Vector2 GetRandomPointInRect(float width, float height)
+    {
+        return new Vector2((float)(rnd.NextDouble() - 0.5) * 2 * width, (float)(rnd.NextDouble() - 0.5) * 2 * height);
+    }
+
+    public static float RandomFloatBetween(float minValue, float maxValue)
     {
         var next = rnd.NextDouble();
         return (float)(minValue + (next * (maxValue - minValue)));

@@ -316,11 +316,11 @@ MonoBehaviour:
     min: 80
     max: 100
   roomWidth:
-    min: 5
+    min: 9
     max: 15
   roomHeight:
-    min: 5
-    max: 15
+    min: 7
+    max: 10
   roomHolder: {fileID: 1657829517}
   corridorHolder: {fileID: 842410057}
   floorTileSO: {fileID: 11400000, guid: 6c7f29f334b914749bac7350143d8622, type: 2}

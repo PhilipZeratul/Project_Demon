@@ -108,7 +108,9 @@ public class DungeonGenerator : MonoBehaviour
         for (int i = 0; i < numOfRooms.Current; i++)
         {
             // Populate dungeon room array
-            Vector2 roomCenter = MathUtils.GetRandomPointInCircle(radius);
+            //Vector2 roomCenter = MathUtils.GetRandomPointInCircle(radius);
+            //Vector2 roomCenter = MathUtils.GetRandomPointInRect(radius * 1.2f, radius);
+            Vector2 roomCenter = MathUtils.GetRandomPointInEclipse(radius, 2f, 1f);
 
             allRoomList.Add(new DungeonRoom
             {
@@ -160,7 +162,7 @@ public class DungeonGenerator : MonoBehaviour
             }
 
             BoxCollider2D collider2d = roomRoot.AddComponent<BoxCollider2D>();
-            collider2d.size = new Vector2(allRoomList[i].width, allRoomList[i].height);
+            collider2d.size = new Vector2(allRoomList[i].width + 4 * Constants.MapInfo.GridSize, allRoomList[i].height + 4 * Constants.MapInfo.GridSize);
 
             Rigidbody2D rigidbody2d = roomRoot.AddComponent<Rigidbody2D>();
             rigidbody2d.gravityScale = 0;
@@ -234,11 +236,12 @@ public class DungeonGenerator : MonoBehaviour
 
         for (int i = 0; i < allRoomList.Count; i++)
         {
-            if (allRoomList[i].width > widthMean * Constants.MapInfo.MainRoomThreshold &&
-                allRoomList[i].height > heightMean * Constants.MapInfo.MainRoomThreshold)
+            if (allRoomList[i].width >= Mathf.FloorToInt(widthMean * Constants.MapInfo.MainRoomThreshold) &&
+                allRoomList[i].height >= Mathf.FloorToInt(heightMean * Constants.MapInfo.MainRoomThreshold))
             {
                 mainRoomList.Add(allRoomList[i]);
-                //Instantiate(wallTileSO.tilePrefabList[0], allRoomList[i].center, Quaternion.identity, allRoomList[i].root.transform); // A marker for main room center.
+                // A marker for main room center.
+                //Instantiate(wallTileSO.tilePrefabList[0], allRoomList[i].center, Quaternion.identity, allRoomList[i].root.transform);
             }
         }
     }
@@ -376,14 +379,14 @@ public class DungeonGenerator : MonoBehaviour
                     Vector2 start = new Vector2();
                     Vector2 end = new Vector2();
 
-                    if (Mathf.Abs(room1.center.x - room2.center.x) < ((room1.width + room2.width) / 2 - Constants.MapInfo.GridSize)) // Construct vertical line.
+                    if (Mathf.Abs(room1.center.x - room2.center.x) < ((room1.width + room2.width) / 2 - 5 * Constants.MapInfo.GridSize)) // Construct vertical line.
                     {
                         float lineX = (room1.center.x + room2.center.x) / 2;
                         start = new Vector2(lineX, room1.center.y);
                         end = new Vector2(lineX, room2.center.y);
                         AddCorridorLine(start, end);
                     }
-                    else if (Mathf.Abs(room1.center.y - room2.center.y) < ((room1.height + room2.height) / 2 -Constants.MapInfo.GridSize)) // Construct horizontal line.
+                    else if (Mathf.Abs(room1.center.y - room2.center.y) < ((room1.height + room2.height) / 2 - 5 * Constants.MapInfo.GridSize)) // Construct horizontal line.
                     {
                         float lineY = (room1.center.y + room2.center.y) / 2;
                         start = new Vector2(room1.center.x, lineY);
@@ -392,12 +395,14 @@ public class DungeonGenerator : MonoBehaviour
                     }
                     else // Construct L shape line.
                     {
-                        start = room1.center;
-                        end = new Vector2(room1.center.x, room2.center.y);
+                        float centerX = room1.center.x + MathUtils.rnd.Next(-1, 2);
+                        float centerY = room2.center.y + MathUtils.rnd.Next(-1, 2);
+                        // Vertical
+                        start = new Vector2(centerX, room1.center.y);
+                        end = new Vector2(centerX, centerY);
                         AddCorridorLine(start, end);
-
-                        start = room2.center;
-                        end = new Vector2(room1.center.x, room2.center.y);
+                        // Horizontal
+                        start = new Vector2(room2.center.x, centerY);
                         AddCorridorLine(start, end);
                     }
 
