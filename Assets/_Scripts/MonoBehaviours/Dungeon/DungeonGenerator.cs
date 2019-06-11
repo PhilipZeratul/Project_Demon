@@ -135,13 +135,20 @@ public class DungeonGenerator : MonoBehaviour
                 {
                     Vector2 position = new Vector2(allRoomList[i].center.x + (allRoomList[i].width / 2 - m) * Constants.MapInfo.GridSize,
                                                    allRoomList[i].center.y + (allRoomList[i].height / 2 - n) * Constants.MapInfo.GridSize);
-
-                    if (m == 0 || m == (allRoomList[i].width - Constants.MapInfo.GridSize) ||
-                        n == 0 || n == (allRoomList[i].height - Constants.MapInfo.GridSize))
+                    // If on edge
+                    int right = allRoomList[i].width - Constants.MapInfo.GridSize;
+                    int bottom = allRoomList[i].height - Constants.MapInfo.GridSize;
+                    if (m == 0 || m == right ||
+                        n == 0 || n == bottom)
                     {
-                        GameObject wallGO = Instantiate(wallTileSO.tilePrefabList[0], position, Quaternion.identity, roomRoot.transform);
-                        DungeonRoom.Tile wallTile = new DungeonRoom.Tile(wallGO);
-                        allRoomList[i].wallTlieList.Add(wallTile);
+                        // If not the corners
+                        if (!((m == 0 && n == 0) || (m == 0 && n == bottom) ||
+                             (m == right && n == 0) || (m == right && n == bottom)))
+                        {
+                            GameObject wallGO = Instantiate(wallTileSO.tilePrefabList[0], position, Quaternion.identity, roomRoot.transform);
+                            DungeonRoom.Tile wallTile = new DungeonRoom.Tile(wallGO);
+                            allRoomList[i].wallTlieList.Add(wallTile);
+                        }
                     }
                     else
                     {

@@ -12,25 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 039db44b3f4bf4279b12a3ff487aaa44, type: 3}
   m_Name: FloorTilemapSO
   m_EditorClassIdentifier: 
-  baseSprites:
+  sprites:
   - {fileID: 21300000, guid: e074b4ee781a2472db8ad0fed074c202, type: 3}
   - {fileID: 21300000, guid: 923b15e5689d84da69df575f678d71e8, type: 3}
   - {fileID: 21300000, guid: 40cdd80c84dab4cd4aa98367148605a2, type: 3}
   - {fileID: 21300000, guid: c240d66673ef04f0285e5087d5e9b8f6, type: 3}
-  topSprites:
-  - {fileID: 21300000, guid: e4b597e7cb8c449458a0ee4b69936585, type: 3}
-  - {fileID: 21300000, guid: 0cc44c79e8fa44815985d6a8e1b6a360, type: 3}
-  - {fileID: 21300000, guid: 53f1058c1f1bf4e148a528077bf372bc, type: 3}
-  - {fileID: 21300000, guid: 193461c1ddc0f4580acda66bd5d94ea7, type: 3}
-  - {fileID: 21300000, guid: 3ce7989b376804367b64321621428869, type: 3}
-  - {fileID: 21300000, guid: e1c768e566d754564bec23828e5af154, type: 3}
-  - {fileID: 21300000, guid: 855bc7d5d046548deb851b09520f9158, type: 3}
-  - {fileID: 21300000, guid: aa967cc3480b34e58a5b09551c6e2dea, type: 3}
-  - {fileID: 21300000, guid: 9f3301aa02dac4c888273c936f7bdaed, type: 3}
-  - {fileID: 21300000, guid: e52428d9771044d01addc1db981ca0d4, type: 3}
-  - {fileID: 21300000, guid: 73e445973687a4d22a207568beac0949, type: 3}
-  - {fileID: 21300000, guid: a0342992b290e4e6cbbf37b95df696c3, type: 3}
-  - {fileID: 21300000, guid: 7359b0e27d36848eabd2a21e3692275f, type: 3}
-  - {fileID: 21300000, guid: bc155a69af4934a7b83b7aca240ee892, type: 3}
-  - {fileID: 21300000, guid: 1908bd26b5db14f43a32fa006a442306, type: 3}
-  - {fileID: 21300000, guid: a57d25b1e1d5847cb94b897c56c93cdf, type: 3}
