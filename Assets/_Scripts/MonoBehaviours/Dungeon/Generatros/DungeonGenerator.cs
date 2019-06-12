@@ -306,7 +306,7 @@ public class DungeonGenerator : MonoBehaviour
         Graph<int> mstGraph = mst.Prim(graph);
 
         ///
-        //DrawSpanningTree(mstGraph);
+        DrawSpanningTree(mstGraph);
 
         return mstGraph;
     }
@@ -362,7 +362,7 @@ public class DungeonGenerator : MonoBehaviour
             isPickedList[index] = true;
 
             ///
-            //Debug.DrawLine(allRoomList[v1List[index]].center, allRoomList[v2List[index]].center, Color.green, 100f);
+            Debug.DrawLine(initialRoomList[v1List[index]].center, initialRoomList[v2List[index]].center, Color.green, 100f);
         }
     }
 
@@ -435,7 +435,6 @@ public class DungeonGenerator : MonoBehaviour
         //Debug.DrawLine(start, end, Color.blue, 100f);
     }
 
-    // allRoomList index dose not equal to room id after PruneRoom().
     private void PruneRoom()
     {
         // Find support rooms.
