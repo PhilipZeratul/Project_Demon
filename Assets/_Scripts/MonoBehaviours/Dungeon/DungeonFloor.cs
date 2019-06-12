@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
 
-public class DungeonFloor : MonoBehaviour
+public class DungeonFloor : DungeonTile
 {
 
 }

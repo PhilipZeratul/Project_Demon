@@ -8,11 +8,13 @@ using MinimumSpanningTree;
 
 public class DungeonGenerator : MonoBehaviour
 {
-    public List<DungeonRoom> allRoomList = new List<DungeonRoom>();
-    public List<DungeonRoom> mainRoomList = new List<DungeonRoom>();
-    public List<DungeonRoom> supportRoomList = new List<DungeonRoom>();
-    public List<DungeonRoom> corridorRoomList = new List<DungeonRoom>();
+    public List<DungeonRoomData> allRoomList = new List<DungeonRoomData>();
+    public List<DungeonRoomData> mainRoomList = new List<DungeonRoomData>();
+    public List<DungeonRoomData> supportRoomList = new List<DungeonRoomData>();
+    public List<DungeonRoomData> corridorRoomList = new List<DungeonRoomData>();
+    private List<DungeonRoomData> initialRoomList = new List<DungeonRoomData>();
 
+    public bool IsError { get; private set; }
     public bool IsGenerationFinished { get; private set; }
     public Action GenerationFinished;
 
@@ -68,16 +70,18 @@ public class DungeonGenerator : MonoBehaviour
     private readonly WaitForSeconds waitForSpawn = new WaitForSeconds(0.2f);
     private readonly WaitForFixedUpdate waitForFixedUpdate = new WaitForFixedUpdate();
 
-    public IEnumerator GenerateDungeon()
+
+    public IEnumerator GenerateDungeon(int numOfMainRooms)
     {
         IsGenerationFinished = false;
+        IsError = false;
 
         GenerateRoom();
         SpawnRoomGO();
         yield return StartCoroutine(WaitForRigidbody());
         RoundRoomPositionToGrid();
         UpdateRoomInfo();
-        SelectMainRoom();
+        SelectMainRoom(numOfMainRooms);
         List<Triangle> triangleList = Triangulation();
         Graph<int> graph = SpanningTree(triangleList);
         AddBackEdges(triangleList, ref graph);
@@ -94,16 +98,16 @@ public class DungeonGenerator : MonoBehaviour
         GenerationFinished?.Invoke();
     }
 
-    public IEnumerator ReGenerateDungeon()
+    public IEnumerator ReGenerateDungeon(int numOfMainRooms)
     {
         yield return StartCoroutine(ClearAll());
-        StartCoroutine(GenerateDungeon());
+        StartCoroutine(GenerateDungeon(numOfMainRooms));
     }
 
     private void GenerateRoom()
     {
         // Immediately get next rnd numOfRooms but use current(max) roomWidth & roomHeight to calculate radius.
-        numOfRooms.Next();
+        numOfRooms.NextOdd();
         float radius = Mathf.Sqrt(numOfRooms.Current) * (roomWidth.Current + roomHeight.Current) / 6;
         for (int i = 0; i < numOfRooms.Current; i++)
         {
@@ -112,34 +116,34 @@ public class DungeonGenerator : MonoBehaviour
             //Vector2 roomCenter = MathUtils.GetRandomPointInRect(radius * 1.2f, radius);
             Vector2 roomCenter = MathUtils.GetRandomPointInEclipse(radius, 2f, 1f);
 
-            allRoomList.Add(new DungeonRoom
+            initialRoomList.Add(new DungeonRoomData
             {
                 id = i,
                 center = roomCenter,
-                width = roomWidth.Next(),
-                height = roomHeight.Next()
+                width = roomWidth.NextOdd(),
+                height = roomHeight.NextOdd()
             });
         }
     }
 
     private void SpawnRoomGO()
     {
-        for (int i = 0;  i < allRoomList.Count; i++)
+        for (int id = 0;  id < initialRoomList.Count; id++)
         {
             GameObject roomRoot = new GameObject("roomRoot");
-            roomRoot.transform.position = allRoomList[i].center;
+            roomRoot.transform.position = initialRoomList[id].center;
             roomRoot.transform.SetParent(roomHolder.transform);
 
             // Spawn floor and wall
-            for (int m = 0; m < allRoomList[i].width; m += Constants.MapInfo.GridSize)
+            for (int m = 0; m < initialRoomList[id].width; m += Constants.MapInfo.GridSize)
             {
-                for (int n = 0; n < allRoomList[i].height; n += Constants.MapInfo.GridSize)
+                for (int n = 0; n < initialRoomList[id].height; n += Constants.MapInfo.GridSize)
                 {
-                    Vector2 position = new Vector2(allRoomList[i].center.x + (allRoomList[i].width / 2 - m) * Constants.MapInfo.GridSize,
-                                                   allRoomList[i].center.y + (allRoomList[i].height / 2 - n) * Constants.MapInfo.GridSize);
+                    Vector2 position = new Vector2(initialRoomList[id].center.x + (initialRoomList[id].width / 2 - m) * Constants.MapInfo.GridSize,
+                                                   initialRoomList[id].center.y + (initialRoomList[id].height / 2 - n) * Constants.MapInfo.GridSize);
                     // If on edge
-                    int right = allRoomList[i].width - Constants.MapInfo.GridSize;
-                    int bottom = allRoomList[i].height - Constants.MapInfo.GridSize;
+                    int right = initialRoomList[id].width - Constants.MapInfo.GridSize;
+                    int bottom = initialRoomList[id].height - Constants.MapInfo.GridSize;
                     if (m == 0 || m == right ||
                         n == 0 || n == bottom)
                     {
@@ -148,29 +152,31 @@ public class DungeonGenerator : MonoBehaviour
                              (m == right && n == 0) || (m == right && n == bottom)))
                         {
                             GameObject wallGO = Instantiate(wallTileSO.tilePrefabList[0], position, Quaternion.identity, roomRoot.transform);
-                            DungeonRoom.Tile wallTile = new DungeonRoom.Tile(wallGO);
-                            allRoomList[i].wallTlieList.Add(wallTile);
+                            wallGO.GetComponent<DungeonTile>().roomId = id;
+                            DungeonRoomData.Tile wallTile = new DungeonRoomData.Tile(wallGO);
+                            initialRoomList[id].wallTlieList.Add(wallTile);
                         }
                     }
                     else
                     {
                         GameObject floorGO = Instantiate(floorTileSO.tilePrefabList[0], position, Quaternion.identity, roomRoot.transform);
-                        DungeonRoom.Tile floorTile = new DungeonRoom.Tile(floorGO);
-                        allRoomList[i].floorTileList.Add(floorTile);
+                        floorGO.GetComponent<DungeonTile>().roomId = id;
+                        DungeonRoomData.Tile floorTile = new DungeonRoomData.Tile(floorGO);
+                        initialRoomList[id].floorTileList.Add(floorTile);
                     }
                 }
             }
 
             BoxCollider2D collider2d = roomRoot.AddComponent<BoxCollider2D>();
-            collider2d.size = new Vector2(allRoomList[i].width + 4 * Constants.MapInfo.GridSize, allRoomList[i].height + 4 * Constants.MapInfo.GridSize);
+            collider2d.size = new Vector2(initialRoomList[id].width + 4 * Constants.MapInfo.GridSize, initialRoomList[id].height + 4 * Constants.MapInfo.GridSize);
 
             Rigidbody2D rigidbody2d = roomRoot.AddComponent<Rigidbody2D>();
             rigidbody2d.gravityScale = 0;
             rigidbody2d.constraints = RigidbodyConstraints2D.FreezeRotation;
 
-            allRoomList[i].root = roomRoot;
-            DungeonRoomId roomID = roomRoot.AddComponent<DungeonRoomId>();
-            roomID.id = allRoomList[i].id;
+            initialRoomList[id].root = roomRoot;
+            DungeonRoom dungeonRoom = roomRoot.AddComponent<DungeonRoom>();
+            dungeonRoom.roomId = initialRoomList[id].id;
         }
     }
 
@@ -182,9 +188,9 @@ public class DungeonGenerator : MonoBehaviour
         {
             bool isAllSleeping = true;
 
-            for (int i = 0; i < allRoomList.Count; i++)
+            for (int i = 0; i < initialRoomList.Count; i++)
             {
-                if (!allRoomList[i].root.GetComponent<Rigidbody2D>().IsSleeping())
+                if (!initialRoomList[i].root.GetComponent<Rigidbody2D>().IsSleeping())
                 {
                     isAllSleeping = false;
                     break;
@@ -203,47 +209,54 @@ public class DungeonGenerator : MonoBehaviour
     private void RoundRoomPositionToGrid()
     {
         //~TODO:
-        for (int i = 0; i < allRoomList.Count; i++)
+        for (int i = 0; i < initialRoomList.Count; i++)
         {
-            allRoomList[i].root.GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Static;
-            allRoomList[i].root.transform.position = new Vector2(
-                MathUtils.RoundToGrid(allRoomList[i].root.transform.position.x, Constants.MapInfo.GridSize),
-                MathUtils.RoundToGrid(allRoomList[i].root.transform.position.y, Constants.MapInfo.GridSize));
+            initialRoomList[i].root.GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Static;
+            initialRoomList[i].root.transform.position = new Vector2(
+                MathUtils.RoundToGrid(initialRoomList[i].root.transform.position.x, Constants.MapInfo.GridSize),
+                MathUtils.RoundToGrid(initialRoomList[i].root.transform.position.y, Constants.MapInfo.GridSize));
         }
     }
 
     private void UpdateRoomInfo()
     {
-        for (int i = 0; i < allRoomList.Count; i++)
+        for (int i = 0; i < initialRoomList.Count; i++)
         {
-            allRoomList[i].center = allRoomList[i].root.transform.position;
+            initialRoomList[i].center = initialRoomList[i].root.transform.position;
         }
     }
 
-    private void SelectMainRoom()
+    private void SelectMainRoom(int numOfMainRooms)
     {
         mainRoomList.Clear();
 
         // Get mean of width and height.
         float widthMean = 0f, heightMean = 0f;
-        for (int i = 0; i < allRoomList.Count; i++)
+        for (int i = 0; i < initialRoomList.Count; i++)
         {
-            widthMean += allRoomList[i].width;
-            heightMean += allRoomList[i].height;
+            widthMean += initialRoomList[i].width;
+            heightMean += initialRoomList[i].height;
         }
-        widthMean /= (float)allRoomList.Count;
-        heightMean /= (float)allRoomList.Count;
+        widthMean /= (float)initialRoomList.Count;
+        heightMean /= (float)initialRoomList.Count;
 
-        for (int i = 0; i < allRoomList.Count; i++)
+        int count = 0;
+        for (int i = 0; i < initialRoomList.Count; i++)
         {
-            if (allRoomList[i].width >= Mathf.FloorToInt(widthMean * Constants.MapInfo.MainRoomThreshold) &&
-                allRoomList[i].height >= Mathf.FloorToInt(heightMean * Constants.MapInfo.MainRoomThreshold))
+            if (initialRoomList[i].width >= Mathf.FloorToInt(widthMean * Constants.MapInfo.MainRoomThreshold) &&
+                initialRoomList[i].height >= Mathf.FloorToInt(heightMean * Constants.MapInfo.MainRoomThreshold))
             {
-                mainRoomList.Add(allRoomList[i]);
+                mainRoomList.Add(initialRoomList[i]);
+                count++;
+                if (count >= numOfMainRooms)
+                    break;
                 // A marker for main room center.
-                //Instantiate(wallTileSO.tilePrefabList[0], allRoomList[i].center, Quaternion.identity, allRoomList[i].root.transform);
+                Instantiate(wallTileSO.tilePrefabList[0], initialRoomList[i].center, Quaternion.identity, initialRoomList[i].root.transform);
             }
         }
+
+        if (count < numOfMainRooms)
+            IsError = true;
     }
 
     private List<Triangle> Triangulation()
@@ -305,7 +318,7 @@ public class DungeonGenerator : MonoBehaviour
             for (int i = 0; i < node.EdgeList.Count; i++)
             {
                 //Debug.LogFormat("room id: {0}, child: {1}", node.Context, node.EdgeList[i].Next.Context);
-                Debug.DrawLine(allRoomList[node.Context].center, allRoomList[node.EdgeList[i].Next.Context].center, Color.red, 100f);
+                Debug.DrawLine(initialRoomList[node.Context].center, initialRoomList[node.EdgeList[i].Next.Context].center, Color.red, 100f);
             }
         }
     }
@@ -359,7 +372,7 @@ public class DungeonGenerator : MonoBehaviour
         {
             foreach (var edge in node.EdgeList)
             {
-                allRoomList[node.Context].connectedIdList.Add(edge.Next.Context);
+                initialRoomList[node.Context].connectedIdList.Add(edge.Next.Context);
             }
         }
     }
@@ -374,8 +387,8 @@ public class DungeonGenerator : MonoBehaviour
             {
                 if (MathUtils.NearlyEqual(node.GetWeight(nextNode), 1f)) // Weight 1f is the original default weight in roomGraph.
                 {
-                    DungeonRoom room1 = allRoomList[node.Context];
-                    DungeonRoom room2 = allRoomList[nextNode.Context];
+                    DungeonRoomData room1 = initialRoomList[node.Context];
+                    DungeonRoomData room2 = initialRoomList[nextNode.Context];
                     Vector2 start = new Vector2();
                     Vector2 end = new Vector2();
 
@@ -434,25 +447,23 @@ public class DungeonGenerator : MonoBehaviour
 
             for (int j = 0; j < hitNum; j++)
             {
-                int roomID = hitList[j].transform.GetComponent<DungeonRoomId>().id;
+                int roomID = hitList[j].transform.GetComponent<DungeonRoom>().roomId;
                 if (mainRoomList.Find(room => room.id == roomID) == null &&
-                    !supportRoomList.Contains(allRoomList[roomID]))
+                    !supportRoomList.Contains(initialRoomList[roomID]))
                 {
-                    supportRoomList.Add(allRoomList[roomID]);
+                    supportRoomList.Add(initialRoomList[roomID]);
                 }
             }
         }
         // Remove unused room gameObjects.
-        for (int i = 0; i < allRoomList.Count; i++)
+        for (int i = 0; i < initialRoomList.Count; i++)
         {
-            if (!mainRoomList.Contains(allRoomList[i]) &&
-                !supportRoomList.Contains(allRoomList[i]))
+            if (!mainRoomList.Contains(initialRoomList[i]) &&
+                !supportRoomList.Contains(initialRoomList[i]))
             {
-                Destroy(allRoomList[i].root);
+                Destroy(initialRoomList[i].root);
             }
         }
-        allRoomList.Clear();
-        allRoomList = new List<DungeonRoom>(mainRoomList.Count + supportRoomList.Count);
         allRoomList.AddRange(mainRoomList);
         allRoomList.AddRange(supportRoomList);
     }
@@ -490,7 +501,7 @@ public class DungeonGenerator : MonoBehaviour
             GameObject corridorRoot = new GameObject("corridorRoot");
             corridorRoot.transform.position = line.Center();
             corridorRoot.transform.SetParent(corridorHolder.transform);
-            DungeonRoom corridorRoom = new DungeonRoom
+            DungeonRoomData corridorRoom = new DungeonRoomData
             {
                 id = 100 + k,
                 center = line.Center(),
@@ -582,14 +593,14 @@ public class DungeonGenerator : MonoBehaviour
         allRoomList.AddRange(corridorRoomList);
     }
 
-    private void SpawnCorridorTile(Vector2 position, bool isWall, GameObject root, ref DungeonRoom corridorRoom)
+    private void SpawnCorridorTile(Vector2 position, bool isWall, GameObject root, ref DungeonRoomData corridorRoom)
     {
         GameObject tileGO;
         Collider2D collider2d;
         if (isWall)
         {
             tileGO = Instantiate(wallTileSO.tilePrefabList[0], position, Quaternion.identity, root.transform);
-            DungeonRoom.Tile tile = new DungeonRoom.Tile(tileGO);
+            DungeonRoomData.Tile tile = new DungeonRoomData.Tile(tileGO);
             collider2d = tileGO.AddComponent<BoxCollider2D>();
             tile.collider2d = collider2d;
             corridorRoom.wallTlieList.Add(tile);
@@ -597,7 +608,7 @@ public class DungeonGenerator : MonoBehaviour
         else
         {
             tileGO = Instantiate(floorTileSO.tilePrefabList[0], position, Quaternion.identity, root.transform);
-            DungeonRoom.Tile tile = new DungeonRoom.Tile(tileGO);
+            DungeonRoomData.Tile tile = new DungeonRoomData.Tile(tileGO);
             collider2d = tileGO.AddComponent<BoxCollider2D>();
             tile.collider2d = collider2d;
             corridorRoom.floorTileList.Add(tile);
@@ -608,12 +619,14 @@ public class DungeonGenerator : MonoBehaviour
     private IEnumerator ClearAll()
     {
         IsGenerationFinished = false;
+        IsError = false;
 
         allRoomList.Clear();
         mainRoomList.Clear();
         supportRoomList.Clear();
         corridorRoomList.Clear();
         corridorLineList.Clear();
+        initialRoomList.Clear();
 
         foreach (Transform child in roomHolder.transform)
         {

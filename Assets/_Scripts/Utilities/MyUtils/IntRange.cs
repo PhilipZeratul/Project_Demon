@@ -25,11 +25,17 @@ public class IntRange
     }
 
     // Get a random odd number. For simplify drawing map.
-    public int Next()
+    public int NextOdd()
     {
         Current = MathUtils.rnd.Next(min, max + 1);
         if (Current % 2 == 0)
             Current++;
+        return Current;
+    }
+
+    public int Next()
+    {
+        Current = MathUtils.rnd.Next(min, max + 1);
         return Current;
     }
 }

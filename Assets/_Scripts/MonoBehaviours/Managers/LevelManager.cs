@@ -24,16 +24,15 @@ public class LevelManager : MonoBehaviour
     private void Start()
     {
         dungeonGenerator.GenerationFinished += DungeonGenerated;
-        StartCoroutine(dungeonGenerator.GenerateDungeon());
+        StartCoroutine(dungeonGenerator.GenerateDungeon(numOfMainRooms.Next()));
     }
 
     private void DungeonGenerated()
     {
-        if (dungeonGenerator.mainRoomList.Count < numOfMainRooms.min ||
-            dungeonGenerator.mainRoomList.Count > numOfMainRooms.max)
+        if (dungeonGenerator.IsError)
         {
             Debug.Log("ReGenerate Dungeon");
-            StartCoroutine(dungeonGenerator.ReGenerateDungeon());
+            StartCoroutine(dungeonGenerator.ReGenerateDungeon(numOfMainRooms.Current));
         }
         else
         {

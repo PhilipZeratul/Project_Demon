@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
 
-public class DungeonRoom : MonoBehaviour
+public class DungeonTile : MonoBehaviour
 {
     public int roomId;
 }

@@ -120,9 +120,9 @@ public class DungeonEnricher : MonoBehaviour
 
     private void DisableWallColliders()
     {
-        foreach (DungeonRoom room in dungeonGenerator.allRoomList)
+        foreach (DungeonRoomData room in dungeonGenerator.allRoomList)
         {
-            foreach (DungeonRoom.Tile wallTile in room.wallTlieList)
+            foreach (DungeonRoomData.Tile wallTile in room.wallTlieList)
             {
                 if (wallTile.go != null)
                     wallTile.collider2d.isTrigger = true;
