@@ -679,9 +679,36 @@ public class DungeonGenerator : MonoBehaviour
     private bool CheckDoorCondition(ref int[] hitNums, ref RaycastHit2D[][] hit2Ds, ref Vector2[] positions)
     {
         // If any of you hit a door, spawn wall for any of you who didn't.
+        int roomId = 0;
+        bool isHitDoor = false;
+        for (int i = 0; i < hitNums.Length; i++)
+        {
+            if (hitNums[i] > 0)
+            {
+                DungeonDoor door = hit2Ds[i][0].collider.GetComponent<DungeonDoor>();
+                if (door)
+                {
+                    roomId = door.roomId;
+                    isHitDoor = true;
+                    break;
+                }
+            }
+        }
 
+        if (isHitDoor)
+        {
+            for (int i = 0; i < hitNums.Length; i++)
+            {
+                if (!hit2Ds[i][0].collider.GetComponent<DungeonDoor>() || !hit2Ds[i][0].collider.GetComponent<DungeonWall>())
+                {
+                    DungeonRoomData data = initialRoomList[roomId];
+                    SpawnCorridorTile(positions[i], true, ref data.root, ref data);
+                }
+            }
+            return true;
+        }
         // Or if 1,2,3 hit wall of a mainRoom, spawn door.
-        if ((hitNums[1] > 0) && (hitNums[2] > 0) && (hitNums[3] > 0))
+        else if ((hitNums[1] > 0) && (hitNums[2] > 0) && (hitNums[3] > 0))
         {
             DungeonWall wall1 = hit2Ds[1][0].collider.GetComponent<DungeonWall>();
             DungeonWall wall2 = hit2Ds[2][0].collider.GetComponent<DungeonWall>();
@@ -691,9 +718,9 @@ public class DungeonGenerator : MonoBehaviour
                 (wall2.roomId < initialRoomList.Count) &&
                 mainRoomList.Contains(initialRoomList[wall2.roomId]))
             {
-                SpawnDoorTile(positions[1], wall1.roomId);
-                SpawnDoorTile(positions[2], wall1.roomId);
-                SpawnDoorTile(positions[3], wall1.roomId);
+                SpawnDoorTile(positions[1], wall2.roomId);
+                SpawnDoorTile(positions[2], wall2.roomId);
+                SpawnDoorTile(positions[3], wall2.roomId);
 
                 Destroy(hit2Ds[1][0].collider.gameObject);
                 Destroy(hit2Ds[2][0].collider.gameObject);
