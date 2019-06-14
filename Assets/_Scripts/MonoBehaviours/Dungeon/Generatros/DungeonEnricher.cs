@@ -122,7 +122,7 @@ public class DungeonEnricher : MonoBehaviour
     {
         foreach (DungeonRoomData room in dungeonGenerator.allRoomList)
         {
-            foreach (DungeonRoomData.Tile wallTile in room.wallTlieList)
+            foreach (DungeonRoomData.Tile wallTile in room.wallTileList)
             {
                 if (wallTile.go != null)
                     wallTile.collider2d.isTrigger = true;
@@ -175,7 +175,7 @@ public class DungeonEnricher : MonoBehaviour
     {
         foreach (var room in dungeonGenerator.allRoomList)
         {
-            foreach (var wallTile in room.wallTlieList)
+            foreach (var wallTile in room.wallTileList)
             {
                 if (wallTile.go != null)
                 {

@@ -10,9 +10,11 @@ public class DungeonRoomData
     public int height;
     public GameObject root;
     public List<Tile> floorTileList = new List<Tile>();
-    public List<Tile> wallTlieList = new List<Tile>();
+    public List<Tile> wallTileList = new List<Tile>();
+    public List<Tile> doorTileList = new List<Tile>();
     public Constants.DungeonRoomType type = Constants.DungeonRoomType.NA;
     public List<int> connectedIdList = new List<int>();
+    public bool isClose = true;
 
 
     public class Tile

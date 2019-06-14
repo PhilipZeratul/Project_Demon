@@ -28,6 +28,7 @@ public class DungeonGenerator : MonoBehaviour
     [SerializeField] private GameObject corridorHolder;
     [SerializeField] private TileSO floorTileSO;
     [SerializeField] private TileSO wallTileSO;
+    [SerializeField] private TileSO doorTileSO;
 
     // Horizontal or Vertical only line.
     // Start/End Unified: Horizontal from left to right, Vertical from bottom to top.
@@ -178,7 +179,7 @@ public class DungeonGenerator : MonoBehaviour
                             GameObject wallGO = Instantiate(wallTileSO.tilePrefabList[0], position, Quaternion.identity, roomRoot.transform);
                             wallGO.GetComponent<DungeonTile>().roomId = id;
                             DungeonRoomData.Tile wallTile = new DungeonRoomData.Tile(wallGO);
-                            initialRoomList[id].wallTlieList.Add(wallTile);
+                            initialRoomList[id].wallTileList.Add(wallTile);
                         }
                     }
                     else
@@ -504,7 +505,7 @@ public class DungeonGenerator : MonoBehaviour
                 collider2d = floorTile.go.AddComponent<BoxCollider2D>();
                 floorTile.collider2d = collider2d;
             }
-            foreach (var wallTile in room.wallTlieList)
+            foreach (var wallTile in room.wallTileList)
             {
                 collider2d = wallTile.go.AddComponent<BoxCollider2D>();
                 wallTile.collider2d = collider2d;
@@ -514,8 +515,16 @@ public class DungeonGenerator : MonoBehaviour
 
     private void BuildCorridor()
     {
-        RaycastHit2D[] hits = new RaycastHit2D[1];
-        Vector2 hitDirection = Vector2.zero;
+        const int corridorWidth = 5;
+        RaycastHit2D[] hit = new RaycastHit2D[1];
+        RaycastHit2D[][] hit2Ds = new RaycastHit2D[corridorWidth][];
+        for (int i = 0; i < corridorWidth; i++)
+        {
+            hit2Ds[i] = new RaycastHit2D[1];
+        }
+        int[] hitNums = new int[corridorWidth];
+        Vector2[] positions = new Vector2[corridorWidth];
+        Vector2 hitDirection = Vector2.zero; // Raycast to current position.
         bool isWall;
 
         for (int k = 0; k < corridorLineList.Count; k++)
@@ -526,7 +535,7 @@ public class DungeonGenerator : MonoBehaviour
             corridorRoot.transform.SetParent(corridorHolder.transform);
             DungeonRoomData corridorRoom = new DungeonRoomData
             {
-                id = 100 + k,
+                id = 1000 + k,
                 center = line.Center,
                 width = (int)(line.EndUnified.x - line.StartUnified.x),
                 height = (int)(line.EndUnified.y - line.StartUnified.y),
@@ -539,7 +548,7 @@ public class DungeonGenerator : MonoBehaviour
                            x < line.EndUnified.x + 2.5f * Constants.MapInfo.GridSize;
                            x += Constants.MapInfo.GridSize)
                 {
-                    float[] y = new float[5];
+                    float[] y = new float[corridorWidth];
                     y[0] = line.StartUnified.y - 2f * Constants.MapInfo.GridSize; // Wall
                     y[1] = line.StartUnified.y - Constants.MapInfo.GridSize;      // Floor
                     y[2] = line.StartUnified.y;                                   // Floor
@@ -548,25 +557,38 @@ public class DungeonGenerator : MonoBehaviour
 
                     for (int i = 0; i < y.Length; i++)
                     {
-                        if (i == 0 || i == 4 ||
-                            MathUtils.NearlyEqual(x, line.StartUnified.x - 2f * Constants.MapInfo.GridSize) ||
-                            MathUtils.NearlyEqual(x, line.EndUnified.x + 2f * Constants.MapInfo.GridSize))
-                            isWall = true;
-                        else
-                            isWall = false;
-
                         Vector2 position = new Vector2(x, y[i]);
-                        int hitNum = Physics2D.RaycastNonAlloc(position, hitDirection, hits);
-                        if (hitNum == 0)
+                        positions[i] = position;
+                        int hitNum = Physics2D.RaycastNonAlloc(position, hitDirection, hit);
+                        hitNums[i] = hitNum;
+                        hit2Ds[i][0] = hit[0];
+                    }
+
+                    if (!CheckDoorCondition(ref hitNums, ref hit2Ds, ref positions))
+                    {
+                        for (int i = 0; i < y.Length; i++)
                         {
-                            SpawnCorridorTile(position, isWall, corridorRoot, ref corridorRoom);
-                        }
-                        else
-                        {
-                            if (hits[0].collider.GetComponent<DungeonWall>())
+                            if (i == 0 || i == 4 ||
+                                MathUtils.NearlyEqual(x, line.StartUnified.x - 2f * Constants.MapInfo.GridSize) ||
+                                MathUtils.NearlyEqual(x, line.EndUnified.x + 2f * Constants.MapInfo.GridSize))
+                                isWall = true;
+                            else
+                                isWall = false;
+                                
+                            if (hitNums[i] == 0)
                             {
-                                Destroy(hits[0].collider.gameObject);
-                                SpawnCorridorTile(position, isWall, corridorRoot, ref corridorRoom);
+                                SpawnCorridorTile(positions[i], isWall, ref corridorRoot, ref corridorRoom);
+                            }
+                            else if (!isWall)
+                            {
+                                DungeonWall wall = hit2Ds[i][0].collider.GetComponent<DungeonWall>();
+                                if (wall)
+                                {
+                                    if (wall.roomId < initialRoomList.Count)
+                                        initialRoomList[wall.roomId].isClose = false;
+                                    Destroy(hit2Ds[i][0].collider.gameObject);
+                                    SpawnCorridorTile(positions[i], isWall, ref corridorRoot, ref corridorRoom);
+                                }
                             }
                         }
                     }
@@ -587,25 +609,38 @@ public class DungeonGenerator : MonoBehaviour
 
                     for (int i = 0; i < x.Length; i++)
                     {
-                        if (i == 0 || i == 4 ||
-                            MathUtils.NearlyEqual(y, line.StartUnified.y - 2f * Constants.MapInfo.GridSize) ||
-                            MathUtils.NearlyEqual(y, line.EndUnified.y + 2f * Constants.MapInfo.GridSize))
-                            isWall = true;
-                        else
-                            isWall = false;
-
                         Vector2 position = new Vector2(x[i], y);
-                        int hitNum = Physics2D.RaycastNonAlloc(position, hitDirection, hits);
-                        if (hitNum == 0)
+                        positions[i] = position;
+                        int hitNum = Physics2D.RaycastNonAlloc(position, hitDirection, hit);
+                        hitNums[i] = hitNum;
+                        hit2Ds[i][0] = hit[0];
+                    }
+
+                    if (!CheckDoorCondition(ref hitNums, ref hit2Ds, ref positions))
+                    {
+                        for (int i = 0; i < x.Length; i++)
                         {
-                            SpawnCorridorTile(position, isWall, corridorRoot, ref corridorRoom);
-                        }
-                        else
-                        {
-                            if (hits[0].collider.GetComponent<DungeonWall>())
+                            if (i == 0 || i == 4 ||
+                                MathUtils.NearlyEqual(y, line.StartUnified.y - 2f * Constants.MapInfo.GridSize) ||
+                                MathUtils.NearlyEqual(y, line.EndUnified.y + 2f * Constants.MapInfo.GridSize))
+                                isWall = true;
+                            else
+                                isWall = false;
+
+                            if (hitNums[i] == 0)
                             {
-                                Destroy(hits[0].collider.gameObject);
-                                SpawnCorridorTile(position, isWall, corridorRoot, ref corridorRoom);
+                                SpawnCorridorTile(positions[i], isWall, ref corridorRoot, ref corridorRoom);
+                            }
+                            else if (!isWall)
+                            {
+                                DungeonWall wall = hit2Ds[i][0].collider.GetComponent<DungeonWall>();
+                                if (wall)
+                                {
+                                    if (wall.roomId < initialRoomList.Count)
+                                        initialRoomList[wall.roomId].isClose = false;
+                                    Destroy(hit2Ds[i][0].collider.gameObject);
+                                    SpawnCorridorTile(positions[i], isWall, ref corridorRoot, ref corridorRoom);
+                                }
                             }
                         }
                     }
@@ -616,27 +651,67 @@ public class DungeonGenerator : MonoBehaviour
         allRoomList.AddRange(corridorRoomList);
     }
 
-    private void SpawnCorridorTile(Vector2 position, bool isWall, GameObject root, ref DungeonRoomData corridorRoom)
+    private void SpawnCorridorTile(Vector2 position, bool isWall, ref GameObject root, ref DungeonRoomData corridorRoom)
     {
         GameObject tileGO;
         Collider2D collider2d;
         if (isWall)
         {
             tileGO = Instantiate(wallTileSO.tilePrefabList[0], position, Quaternion.identity, root.transform);
+            tileGO.GetComponent<DungeonTile>().roomId = corridorRoom.id;
             DungeonRoomData.Tile tile = new DungeonRoomData.Tile(tileGO);
             collider2d = tileGO.AddComponent<BoxCollider2D>();
             tile.collider2d = collider2d;
-            corridorRoom.wallTlieList.Add(tile);
+            corridorRoom.wallTileList.Add(tile);
         }
         else
         {
             tileGO = Instantiate(floorTileSO.tilePrefabList[0], position, Quaternion.identity, root.transform);
+            tileGO.GetComponent<DungeonTile>().roomId = corridorRoom.id;
             DungeonRoomData.Tile tile = new DungeonRoomData.Tile(tileGO);
             collider2d = tileGO.AddComponent<BoxCollider2D>();
             tile.collider2d = collider2d;
             corridorRoom.floorTileList.Add(tile);
         }
 
+    }
+
+    private bool CheckDoorCondition(ref int[] hitNums, ref RaycastHit2D[][] hit2Ds, ref Vector2[] positions)
+    {
+        // If any of you hit a door, spawn wall for any of you who didn't.
+
+        // Or if 1,2,3 hit wall of a mainRoom, spawn door.
+        if ((hitNums[1] > 0) && (hitNums[2] > 0) && (hitNums[3] > 0))
+        {
+            DungeonWall wall1 = hit2Ds[1][0].collider.GetComponent<DungeonWall>();
+            DungeonWall wall2 = hit2Ds[2][0].collider.GetComponent<DungeonWall>();
+            DungeonWall wall3 = hit2Ds[3][0].collider.GetComponent<DungeonWall>();
+
+            if (wall1 && wall2 && wall3 && 
+                (wall2.roomId < initialRoomList.Count) &&
+                mainRoomList.Contains(initialRoomList[wall2.roomId]))
+            {
+                SpawnDoorTile(positions[1], wall1.roomId);
+                SpawnDoorTile(positions[2], wall1.roomId);
+                SpawnDoorTile(positions[3], wall1.roomId);
+
+                Destroy(hit2Ds[1][0].collider.gameObject);
+                Destroy(hit2Ds[2][0].collider.gameObject);
+                Destroy(hit2Ds[3][0].collider.gameObject);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void SpawnDoorTile(Vector2 position, int roomId)
+    {
+        GameObject tileGO = Instantiate(doorTileSO.tilePrefabList[0], position, Quaternion.identity, initialRoomList[roomId].root.transform);
+        tileGO.GetComponent<DungeonTile>().roomId = roomId;
+        DungeonRoomData.Tile tile = new DungeonRoomData.Tile(tileGO);
+        Collider2D collider2d = tileGO.AddComponent<BoxCollider2D>();
+        tile.collider2d = collider2d;
+        initialRoomList[roomId].doorTileList.Add(tile);
     }
 
     private IEnumerator ClearAll()
