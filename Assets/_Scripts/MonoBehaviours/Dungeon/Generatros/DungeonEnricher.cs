@@ -72,7 +72,7 @@ public class DungeonEnricher : MonoBehaviour
         while (!isDone)
         {
             int index = MathUtils.rnd.Next(0, dungeonGenerator.mainRoomList.Count);
-            if (dungeonGenerator.mainRoomList[index].type == Constants.DungeonRoomType.NA)
+            if (dungeonGenerator.mainRoomList[index].type == Constants.DungeonRoomType.NA && dungeonGenerator.mainRoomList[index].isClose)
             {
                 switch (type)
                 {

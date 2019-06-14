@@ -3,7 +3,8 @@
 
 public static class MathUtils
 {
-    public static readonly System.Random rnd = new System.Random();
+    public static readonly System.Random rnd = new System.Random(seed); // seed
+    public static readonly int seed = System.Environment.TickCount;
 
 
     public static Vector2 GetRandomPointInCircle(float radius)

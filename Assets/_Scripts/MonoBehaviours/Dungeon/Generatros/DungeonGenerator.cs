@@ -117,7 +117,8 @@ public class DungeonGenerator : MonoBehaviour
         yield return waitForFixedUpdate;
         BuildCorridor();
         yield return waitForFixedUpdate;
-
+        DisableDoorColliders();
+        yield return waitForFixedUpdate;
 
         IsGenerationFinished = true;
         GenerationFinished?.Invoke();
@@ -564,14 +565,21 @@ public class DungeonGenerator : MonoBehaviour
                         hit2Ds[i][0] = hit[0];
                     }
 
-                    if (!CheckDoorCondition(ref hitNums, ref hit2Ds, ref positions))
+                    if (((x > line.StartUnified.x) || (x < line.EndUnified.x)) &&
+                        !CheckDoorCondition(ref hitNums, ref hit2Ds, ref positions))
                     {
                         for (int i = 0; i < y.Length; i++)
                         {
-                            if (i == 0 || i == 4 ||
-                                MathUtils.NearlyEqual(x, line.StartUnified.x - 2f * Constants.MapInfo.GridSize) ||
-                                MathUtils.NearlyEqual(x, line.EndUnified.x + 2f * Constants.MapInfo.GridSize))
+                            bool isXStart = MathUtils.NearlyEqual(x, line.StartUnified.x - 2f * Constants.MapInfo.GridSize);
+                            bool isXEnd = MathUtils.NearlyEqual(x, line.EndUnified.x + 2f * Constants.MapInfo.GridSize);
+
+                            if (i == 0 || i == 4 || isXStart || isXEnd)
+                            {
+                                // If corners.
+                                if ((i == 0 && isXStart) || (i == 0 && isXEnd) || (i == 4 && isXStart) || (i == 4 && isXEnd))
+                                    continue;
                                 isWall = true;
+                            }
                             else
                                 isWall = false;
                                 
@@ -616,14 +624,21 @@ public class DungeonGenerator : MonoBehaviour
                         hit2Ds[i][0] = hit[0];
                     }
 
-                    if (!CheckDoorCondition(ref hitNums, ref hit2Ds, ref positions))
+                    if (((y > line.StartUnified.y) || (y < line.EndUnified.y)) && 
+                        !CheckDoorCondition(ref hitNums, ref hit2Ds, ref positions))
                     {
                         for (int i = 0; i < x.Length; i++)
                         {
-                            if (i == 0 || i == 4 ||
-                                MathUtils.NearlyEqual(y, line.StartUnified.y - 2f * Constants.MapInfo.GridSize) ||
-                                MathUtils.NearlyEqual(y, line.EndUnified.y + 2f * Constants.MapInfo.GridSize))
+                            bool isYStart = MathUtils.NearlyEqual(y, line.StartUnified.y - 2f * Constants.MapInfo.GridSize);
+                            bool isYEnd = MathUtils.NearlyEqual(y, line.EndUnified.y + 2f * Constants.MapInfo.GridSize);
+
+                            if (i == 0 || i == 4 || isYStart || isYEnd)
+                            {
+                                // If corners.
+                                if ((i == 0 && isYStart) || (i == 0 && isYEnd) || (i == 4 && isYStart) || (i == 4 && isYEnd))
+                                    continue;
                                 isWall = true;
+                            }
                             else
                                 isWall = false;
 
@@ -651,6 +666,71 @@ public class DungeonGenerator : MonoBehaviour
         allRoomList.AddRange(corridorRoomList);
     }
 
+    private bool CheckDoorCondition(ref int[] hitNums, ref RaycastHit2D[][] hit2Ds, ref Vector2[] positions)
+    {
+        // If any of you hit a door, spawn wall for any of you who didn't.
+        /*int roomId = 0;
+        bool isHitDoor = false;
+        for (int i = 0; i < hitNums.Length; i++)
+        {
+            if (hitNums[i] > 0)
+            {
+                DungeonDoor door = hit2Ds[i][0].collider.GetComponent<DungeonDoor>();
+                if (door)
+                {
+                    roomId = door.roomId;
+                    isHitDoor = true;
+                    break;
+                }
+            }
+        }
+
+        if (isHitDoor)
+        {
+            for (int i = 0; i < hitNums.Length; i++)
+            {
+                if (!hit2Ds[i][0].collider.GetComponent<DungeonDoor>() && !hit2Ds[i][0].collider.GetComponent<DungeonWall>())
+                {
+                    DungeonRoomData data = initialRoomList[roomId];
+                    SpawnCorridorTile(positions[i], true, ref data.root, ref data);
+                }
+            }
+            return true;
+        }*/
+        // Or if 1,2,3 hit wall of a mainRoom, spawn door.
+        if ((hitNums[1] > 0) && (hitNums[2] > 0) && (hitNums[3] > 0))
+        {
+            DungeonWall wall1 = hit2Ds[1][0].collider.GetComponent<DungeonWall>();
+            DungeonWall wall2 = hit2Ds[2][0].collider.GetComponent<DungeonWall>();
+            DungeonWall wall3 = hit2Ds[3][0].collider.GetComponent<DungeonWall>();
+
+            if (wall1 && wall2 && wall3 &&
+                (wall2.roomId < initialRoomList.Count) &&
+                mainRoomList.Contains(initialRoomList[wall2.roomId]))
+            {
+                SpawnDoorTile(positions[1], wall2.roomId);
+                SpawnDoorTile(positions[2], wall2.roomId);
+                SpawnDoorTile(positions[3], wall2.roomId);
+
+                Destroy(hit2Ds[1][0].collider.gameObject);
+                Destroy(hit2Ds[2][0].collider.gameObject);
+                Destroy(hit2Ds[3][0].collider.gameObject);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void SpawnDoorTile(Vector2 position, int roomId)
+    {
+        GameObject tileGO = Instantiate(doorTileSO.tilePrefabList[0], position, Quaternion.identity, initialRoomList[roomId].root.transform);
+        tileGO.GetComponent<DungeonTile>().roomId = roomId;
+        DungeonRoomData.Tile tile = new DungeonRoomData.Tile(tileGO);
+        Collider2D collider2d = tileGO.AddComponent<BoxCollider2D>();
+        tile.collider2d = collider2d;
+        initialRoomList[roomId].doorTileList.Add(tile);
+    }
+
     private void SpawnCorridorTile(Vector2 position, bool isWall, ref GameObject root, ref DungeonRoomData corridorRoom)
     {
         GameObject tileGO;
@@ -676,69 +756,15 @@ public class DungeonGenerator : MonoBehaviour
 
     }
 
-    private bool CheckDoorCondition(ref int[] hitNums, ref RaycastHit2D[][] hit2Ds, ref Vector2[] positions)
+    private void DisableDoorColliders()
     {
-        // If any of you hit a door, spawn wall for any of you who didn't.
-        int roomId = 0;
-        bool isHitDoor = false;
-        for (int i = 0; i < hitNums.Length; i++)
+        foreach (var room in mainRoomList)
         {
-            if (hitNums[i] > 0)
+            foreach (var tile in room.doorTileList)
             {
-                DungeonDoor door = hit2Ds[i][0].collider.GetComponent<DungeonDoor>();
-                if (door)
-                {
-                    roomId = door.roomId;
-                    isHitDoor = true;
-                    break;
-                }
+                tile.collider2d.isTrigger = true;
             }
         }
-
-        if (isHitDoor)
-        {
-            for (int i = 0; i < hitNums.Length; i++)
-            {
-                if (!hit2Ds[i][0].collider.GetComponent<DungeonDoor>() || !hit2Ds[i][0].collider.GetComponent<DungeonWall>())
-                {
-                    DungeonRoomData data = initialRoomList[roomId];
-                    SpawnCorridorTile(positions[i], true, ref data.root, ref data);
-                }
-            }
-            return true;
-        }
-        // Or if 1,2,3 hit wall of a mainRoom, spawn door.
-        else if ((hitNums[1] > 0) && (hitNums[2] > 0) && (hitNums[3] > 0))
-        {
-            DungeonWall wall1 = hit2Ds[1][0].collider.GetComponent<DungeonWall>();
-            DungeonWall wall2 = hit2Ds[2][0].collider.GetComponent<DungeonWall>();
-            DungeonWall wall3 = hit2Ds[3][0].collider.GetComponent<DungeonWall>();
-
-            if (wall1 && wall2 && wall3 && 
-                (wall2.roomId < initialRoomList.Count) &&
-                mainRoomList.Contains(initialRoomList[wall2.roomId]))
-            {
-                SpawnDoorTile(positions[1], wall2.roomId);
-                SpawnDoorTile(positions[2], wall2.roomId);
-                SpawnDoorTile(positions[3], wall2.roomId);
-
-                Destroy(hit2Ds[1][0].collider.gameObject);
-                Destroy(hit2Ds[2][0].collider.gameObject);
-                Destroy(hit2Ds[3][0].collider.gameObject);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private void SpawnDoorTile(Vector2 position, int roomId)
-    {
-        GameObject tileGO = Instantiate(doorTileSO.tilePrefabList[0], position, Quaternion.identity, initialRoomList[roomId].root.transform);
-        tileGO.GetComponent<DungeonTile>().roomId = roomId;
-        DungeonRoomData.Tile tile = new DungeonRoomData.Tile(tileGO);
-        Collider2D collider2d = tileGO.AddComponent<BoxCollider2D>();
-        tile.collider2d = collider2d;
-        initialRoomList[roomId].doorTileList.Add(tile);
     }
 
     private IEnumerator ClearAll()

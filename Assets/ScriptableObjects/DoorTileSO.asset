@@ -12,4 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe190da9fad01403e9d5abf7129f91f5, type: 3}
   m_Name: DoorTileSO
   m_EditorClassIdentifier: 
-  tilePrefabList: []
+  tilePrefabList:
+  - {fileID: 4801768730079519814, guid: 2cbecaeef2c1a41f2886a9082ae1bd3b, type: 3}

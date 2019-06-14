@@ -11,5 +11,6 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         SceneManager.LoadSceneAsync(SceneList[0].ScenePath, LoadSceneMode.Additive);
+        Debug.LogFormat("Random seed = {0}", MathUtils.seed);
     }
 }
