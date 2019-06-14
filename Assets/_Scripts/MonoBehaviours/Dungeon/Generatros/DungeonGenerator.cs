@@ -29,44 +29,68 @@ public class DungeonGenerator : MonoBehaviour
     [SerializeField] private TileSO floorTileSO;
     [SerializeField] private TileSO wallTileSO;
 
-    private class Line
+    // Horizontal or Vertical only line.
+    // Start/End Unified: Horizontal from left to right, Vertical from bottom to top.
+    private class HVLine
     {
+        public enum Direction
+        {
+            NA, North, South, West, East
+        }
+
+        public Vector2 StartUnified { get; private set; }
+        public Vector2 EndUnified { get; private set; }
+        public Vector2 Center { get; private set; }
         public Vector2 Start { get; private set; }
         public Vector2 End { get; private set; }
+        public Direction LineDirection { get; private set; }
 
-        // Horizontal line: from left to right
-        // Vertical line: from bottom to top
-        public Line(Vector2 start, Vector2 end)
+
+        public HVLine(Vector2 start, Vector2 end)
         {
+            Start = start;
+            End = end;
+            Center = (start + end) / 2;
+
+            if (MathUtils.NearlyEqual(start.x, end.x))
+            {
+                if (start.y > end.y) LineDirection = Direction.South;
+                else if (start.y < end.y) LineDirection = Direction.North;
+                else throw new ArgumentException("HVLine have the same start and end point.");
+            }
+            else if (MathUtils.NearlyEqual(start.y, end.y))
+            {
+                if (start.x > end.x) LineDirection = Direction.West;
+                else if (start.x < end.x) LineDirection = Direction.East;
+                else throw new ArgumentException("HVLine have the same start and end point.");
+            }
+            else
+                throw new ArgumentException("HVLine is not horizontal nor vertical");
+
             if ((start.x < end.x) || (start.y < end.y))
             {
-                Start = start;
-                End = end;
+                StartUnified = start;
+                EndUnified = end;
             }
             else
             {
-                Start = end;
-                End = start;
+                StartUnified = end;
+                EndUnified = start;
             }
-        }
-
-        public Vector2 Center()
-        {
-            return (Start + End) / 2;
         }
 
         public bool IsHorizontal()
         {
-            return MathUtils.NearlyEqual(Start.y, End.y);
+            return LineDirection == Direction.East || LineDirection == Direction.West;
         }
 
         public bool IsVertical()
         {
-            return MathUtils.NearlyEqual(Start.x, End.x);
+            return LineDirection == Direction.North || LineDirection == Direction.South;
         }
     }
 
-    private List<Line> corridorLineList = new List<Line>();
+    private List<HVLine> corridorLineList = new List<HVLine>();
     private readonly WaitForSeconds waitForSpawn = new WaitForSeconds(0.2f);
     private readonly WaitForFixedUpdate waitForFixedUpdate = new WaitForFixedUpdate();
 
@@ -430,7 +454,7 @@ public class DungeonGenerator : MonoBehaviour
     {
         start = new Vector2(MathUtils.RoundToGrid(start.x), MathUtils.RoundToGrid(start.y));
         end = new Vector2(MathUtils.RoundToGrid(end.x), MathUtils.RoundToGrid(end.y));
-        Line line = new Line(start, end);
+        HVLine line = new HVLine(start, end);
         corridorLineList.Add(line);
         //Debug.DrawLine(start, end, Color.blue, 100f);
     }
@@ -442,7 +466,7 @@ public class DungeonGenerator : MonoBehaviour
         {
             ContactFilter2D filter2D = new ContactFilter2D();
             List<RaycastHit2D> hitList = new List<RaycastHit2D>();
-            int hitNum = Physics2D.Linecast(corridorLineList[i].Start, corridorLineList[i].End, filter2D.NoFilter(), hitList);
+            int hitNum = Physics2D.Linecast(corridorLineList[i].StartUnified, corridorLineList[i].EndUnified, filter2D.NoFilter(), hitList);
 
             for (int j = 0; j < hitNum; j++)
             {
@@ -498,35 +522,35 @@ public class DungeonGenerator : MonoBehaviour
         {
             var line = corridorLineList[k];
             GameObject corridorRoot = new GameObject("corridorRoot");
-            corridorRoot.transform.position = line.Center();
+            corridorRoot.transform.position = line.Center;
             corridorRoot.transform.SetParent(corridorHolder.transform);
             DungeonRoomData corridorRoom = new DungeonRoomData
             {
                 id = 100 + k,
-                center = line.Center(),
-                width = (int)(line.End.x - line.Start.x),
-                height = (int)(line.End.y - line.Start.y),
+                center = line.Center,
+                width = (int)(line.EndUnified.x - line.StartUnified.x),
+                height = (int)(line.EndUnified.y - line.StartUnified.y),
                 root = corridorRoot
             };
 
             if (line.IsHorizontal())
             {
-                for (float x = line.Start.x - 2f * Constants.MapInfo.GridSize;
-                           x < line.End.x + 2.5f * Constants.MapInfo.GridSize;
+                for (float x = line.StartUnified.x - 2f * Constants.MapInfo.GridSize;
+                           x < line.EndUnified.x + 2.5f * Constants.MapInfo.GridSize;
                            x += Constants.MapInfo.GridSize)
                 {
                     float[] y = new float[5];
-                    y[0] = line.Start.y - 2f * Constants.MapInfo.GridSize; // Wall
-                    y[1] = line.Start.y - Constants.MapInfo.GridSize;      // Floor
-                    y[2] = line.Start.y;                                   // Floor
-                    y[3] = line.Start.y + Constants.MapInfo.GridSize;      // Floor
-                    y[4] = line.Start.y + 2f * Constants.MapInfo.GridSize; // Wall
+                    y[0] = line.StartUnified.y - 2f * Constants.MapInfo.GridSize; // Wall
+                    y[1] = line.StartUnified.y - Constants.MapInfo.GridSize;      // Floor
+                    y[2] = line.StartUnified.y;                                   // Floor
+                    y[3] = line.StartUnified.y + Constants.MapInfo.GridSize;      // Floor
+                    y[4] = line.StartUnified.y + 2f * Constants.MapInfo.GridSize; // Wall
 
                     for (int i = 0; i < y.Length; i++)
                     {
                         if (i == 0 || i == 4 ||
-                            MathUtils.NearlyEqual(x, line.Start.x - 2f * Constants.MapInfo.GridSize) ||
-                            MathUtils.NearlyEqual(x, line.End.x + 2f * Constants.MapInfo.GridSize))
+                            MathUtils.NearlyEqual(x, line.StartUnified.x - 2f * Constants.MapInfo.GridSize) ||
+                            MathUtils.NearlyEqual(x, line.EndUnified.x + 2f * Constants.MapInfo.GridSize))
                             isWall = true;
                         else
                             isWall = false;
@@ -550,22 +574,22 @@ public class DungeonGenerator : MonoBehaviour
             }
             else if (line.IsVertical())
             {
-                for (float y = line.Start.y - 2f * Constants.MapInfo.GridSize;
-                           y < line.End.y + 2.5f * Constants.MapInfo.GridSize;
+                for (float y = line.StartUnified.y - 2f * Constants.MapInfo.GridSize;
+                           y < line.EndUnified.y + 2.5f * Constants.MapInfo.GridSize;
                            y += Constants.MapInfo.GridSize)
                 {
                     float[] x = new float[5];
-                    x[0] = line.Start.x - 2f * Constants.MapInfo.GridSize; // Wall
-                    x[1] = line.Start.x - Constants.MapInfo.GridSize;      // Floor
-                    x[2] = line.Start.x;                                   // Floor
-                    x[3] = line.Start.x + Constants.MapInfo.GridSize;      // Floor
-                    x[4] = line.Start.x + 2f * Constants.MapInfo.GridSize; // Wall
+                    x[0] = line.StartUnified.x - 2f * Constants.MapInfo.GridSize; // Wall
+                    x[1] = line.StartUnified.x - Constants.MapInfo.GridSize;      // Floor
+                    x[2] = line.StartUnified.x;                                   // Floor
+                    x[3] = line.StartUnified.x + Constants.MapInfo.GridSize;      // Floor
+                    x[4] = line.StartUnified.x + 2f * Constants.MapInfo.GridSize; // Wall
 
                     for (int i = 0; i < x.Length; i++)
                     {
                         if (i == 0 || i == 4 ||
-                            MathUtils.NearlyEqual(y, line.Start.y - 2f * Constants.MapInfo.GridSize) ||
-                            MathUtils.NearlyEqual(y, line.End.y + 2f * Constants.MapInfo.GridSize))
+                            MathUtils.NearlyEqual(y, line.StartUnified.y - 2f * Constants.MapInfo.GridSize) ||
+                            MathUtils.NearlyEqual(y, line.EndUnified.y + 2f * Constants.MapInfo.GridSize))
                             isWall = true;
                         else
                             isWall = false;
