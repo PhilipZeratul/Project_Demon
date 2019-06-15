@@ -148,6 +148,7 @@ public class DungeonEnricher : MonoBehaviour
         RaycastHit2D[] hits = new RaycastHit2D[1];
         int index = 0;
         int hitNum = 0;
+        Physics2D.queriesHitTriggers = false;
         Physics2D.queriesStartInColliders = false;
 
         foreach (var room in dungeonGenerator.allRoomList)
@@ -217,10 +218,11 @@ public class DungeonEnricher : MonoBehaviour
                 wallTile.spriteRenderer.sprite = wallTilemapSO.sprites[index];
                 if (wallTilemapSO.sprites[index] == null)
                 {
-                    Debug.LogFormat("north {0}, west {1}, east {2}, south {3}, index {4}", north, west, east, south, index);
+                    Debug.LogFormat("north {0}, west {1}, east {2}, south {3}, index {4}, position {5}", north, west, east, south, index, wallTile.go.transform.position);
                 }
             }
         }
+        Physics2D.queriesHitTriggers = true;
         Physics2D.queriesStartInColliders = true;
     }
 
