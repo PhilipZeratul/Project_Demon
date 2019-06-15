@@ -11,7 +11,9 @@ public class DungeonEnricher : MonoBehaviour
     public Action EnrichFinished;
 
     [SerializeField]
-    private FloorTilemapSO floorTilemapSO;
+    private TilemapSO floorTilemapSO;
+    [SerializeField]
+    private TilemapSO wallTilemapSO;
 
     private DungeonGenerator dungeonGenerator;
     private readonly WaitForFixedUpdate waitForFixedUpdate = new WaitForFixedUpdate();
@@ -29,7 +31,6 @@ public class DungeonEnricher : MonoBehaviour
         IsEnrichFinished = false;
 
         SetMainRoomFunc();
-        DisableWallColliders();
         PlaceFloorSprite();
         PlaceWallTileSprite();
 
@@ -118,6 +119,7 @@ public class DungeonEnricher : MonoBehaviour
         }
     }
 
+    // Deprecated.
     private void DisableWallColliders()
     {
         foreach (DungeonRoomData room in dungeonGenerator.allRoomList)
@@ -141,34 +143,85 @@ public class DungeonEnricher : MonoBehaviour
         }
     }
 
-    // TODO: Tilemap is for walls not floors
     private void PlaceWallTileSprite()
     {
-        //RaycastHit2D[] hits = new RaycastHit2D[1];
-        //int index = 0;
-        //int hitNum = 0;
-        //Physics2D.queriesHitTriggers = false;
-        //Physics2D.queriesStartInColliders = false;
+        RaycastHit2D[] hits = new RaycastHit2D[1];
+        int index = 0;
+        int hitNum = 0;
+        Physics2D.queriesStartInColliders = false;
 
-        //foreach (var room in dungeonGenerator.allRoomList)
-        //{
-        //    foreach (var floorTile in room.floorTileList)
-        //    {
-        //        index = 0;
-        //        hitNum = Physics2D.RaycastNonAlloc(floorTile.go.transform.position, Vector2.up, hits, Constants.MapInfo.GridSize);
-        //        if (hitNum > 0) index += 1;
-        //        hitNum = Physics2D.RaycastNonAlloc(floorTile.go.transform.position, Vector2.left, hits, Constants.MapInfo.GridSize);
-        //        if (hitNum > 0) index += 2;
-        //        hitNum = Physics2D.RaycastNonAlloc(floorTile.go.transform.position, Vector2.right, hits, Constants.MapInfo.GridSize);
-        //        if (hitNum > 0) index += 4;
-        //        hitNum = Physics2D.RaycastNonAlloc(floorTile.go.transform.position, Vector2.down, hits, Constants.MapInfo.GridSize);
-        //        if (hitNum > 0) index += 8;
+        foreach (var room in dungeonGenerator.allRoomList)
+        {
+            foreach (var wallTile in room.wallTileList)
+            {
+                int north = 0, south = 0, east = 0, west = 0;
 
-        //        floorTile.spriteRenderer.topRenderer.sprite = floorTilemapSO.topSprites[index];
-        //    }
-        //}
-        //Physics2D.queriesHitTriggers = true;
-        //Physics2D.queriesStartInColliders = true;
+                index = 0;
+                hitNum = Physics2D.RaycastNonAlloc(wallTile.go.transform.position, Vector2.up, hits, Constants.MapInfo.GridSize);
+                if (hitNum > 0)
+                {
+                    if (hits[0].collider.GetComponent<DungeonFloor>())
+                    {
+                        north = 1;
+                        index += 1;
+                    }
+                    else
+                    {
+                        north = 2;
+                        index += 2;
+                    }
+                }
+                hitNum = Physics2D.RaycastNonAlloc(wallTile.go.transform.position, Vector2.left, hits, Constants.MapInfo.GridSize);
+                if (hitNum > 0)
+                {
+                    if (hits[0].collider.GetComponent<DungeonFloor>())
+                    {
+                        west = 1;
+                        index += 3;
+                    }
+                    else
+                    {
+                        west = 2;
+                        index += 6;
+                    }
+                }
+                hitNum = Physics2D.RaycastNonAlloc(wallTile.go.transform.position, Vector2.right, hits, Constants.MapInfo.GridSize);
+                if (hitNum > 0)
+                {
+                    if (hits[0].collider.GetComponent<DungeonFloor>())
+                    {
+                        east = 1;
+                        index += 9;
+                    }
+                    else
+                    {
+                        east = 2;
+                        index += 18;
+                    }
+                }
+                hitNum = Physics2D.RaycastNonAlloc(wallTile.go.transform.position, Vector2.down, hits, Constants.MapInfo.GridSize);
+                if (hitNum > 0)
+                {
+                    if (hits[0].collider.GetComponent<DungeonFloor>())
+                    {
+                        south = 1;
+                        index += 27;
+                    }
+                    else
+                    {
+                        south = 2;
+                        index += 54;
+                    }
+                }
+
+                wallTile.spriteRenderer.sprite = wallTilemapSO.sprites[index];
+                if (wallTilemapSO.sprites[index] == null)
+                {
+                    Debug.LogFormat("north {0}, west {1}, east {2}, south {3}, index {4}", north, west, east, south, index);
+                }
+            }
+        }
+        Physics2D.queriesStartInColliders = true;
     }
 
     private void GenerateCompositeCollider()

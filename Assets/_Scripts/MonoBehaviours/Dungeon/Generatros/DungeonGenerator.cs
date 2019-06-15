@@ -536,7 +536,7 @@ public class DungeonGenerator : MonoBehaviour
             corridorRoot.transform.SetParent(corridorHolder.transform);
             DungeonRoomData corridorRoom = new DungeonRoomData
             {
-                id = 1000 + k,
+                id = initialRoomList.Count,
                 center = line.Center,
                 width = (int)(line.EndUnified.x - line.StartUnified.x),
                 height = (int)(line.EndUnified.y - line.StartUnified.y),
@@ -566,7 +566,7 @@ public class DungeonGenerator : MonoBehaviour
                     }
 
                     if (((x > line.StartUnified.x) || (x < line.EndUnified.x)) &&
-                        !CheckDoorCondition(ref hitNums, ref hit2Ds, ref positions))
+                        !CheckDoorCondition(ref hitNums, hit2Ds, ref positions))
                     {
                         for (int i = 0; i < y.Length; i++)
                         {
@@ -592,8 +592,9 @@ public class DungeonGenerator : MonoBehaviour
                                 DungeonWall wall = hit2Ds[i][0].collider.GetComponent<DungeonWall>();
                                 if (wall)
                                 {
-                                    if (wall.roomId < initialRoomList.Count)
-                                        initialRoomList[wall.roomId].isClose = false;
+                                    initialRoomList[wall.roomId].isClose = false;
+                                    initialRoomList[wall.roomId].wallTileList.Remove(
+                                        initialRoomList[wall.roomId].wallTileList.Find(obj => obj.collider2d == hit2Ds[i][0].collider));
                                     Destroy(hit2Ds[i][0].collider.gameObject);
                                     SpawnCorridorTile(positions[i], isWall, ref corridorRoot, ref corridorRoom);
                                 }
@@ -625,7 +626,7 @@ public class DungeonGenerator : MonoBehaviour
                     }
 
                     if (((y > line.StartUnified.y) || (y < line.EndUnified.y)) && 
-                        !CheckDoorCondition(ref hitNums, ref hit2Ds, ref positions))
+                        !CheckDoorCondition(ref hitNums, hit2Ds, ref positions))
                     {
                         for (int i = 0; i < x.Length; i++)
                         {
@@ -651,8 +652,9 @@ public class DungeonGenerator : MonoBehaviour
                                 DungeonWall wall = hit2Ds[i][0].collider.GetComponent<DungeonWall>();
                                 if (wall)
                                 {
-                                    if (wall.roomId < initialRoomList.Count)
-                                        initialRoomList[wall.roomId].isClose = false;
+                                    initialRoomList[wall.roomId].isClose = false;
+                                    initialRoomList[wall.roomId].wallTileList.Remove(
+                                        initialRoomList[wall.roomId].wallTileList.Find(obj => obj.collider2d == hit2Ds[i][0].collider));
                                     Destroy(hit2Ds[i][0].collider.gameObject);
                                     SpawnCorridorTile(positions[i], isWall, ref corridorRoot, ref corridorRoom);
                                 }
@@ -662,11 +664,12 @@ public class DungeonGenerator : MonoBehaviour
                 }
             }
             corridorRoomList.Add(corridorRoom);
+            initialRoomList.Add(corridorRoom);
         }
         allRoomList.AddRange(corridorRoomList);
     }
 
-    private bool CheckDoorCondition(ref int[] hitNums, ref RaycastHit2D[][] hit2Ds, ref Vector2[] positions)
+    private bool CheckDoorCondition(ref int[] hitNums, RaycastHit2D[][] hit2Ds, ref Vector2[] positions)
     {
         // If any of you hit a door, spawn wall for any of you who didn't.
         /*int roomId = 0;
@@ -711,6 +714,10 @@ public class DungeonGenerator : MonoBehaviour
                 SpawnDoorTile(positions[1], wall2.roomId);
                 SpawnDoorTile(positions[2], wall2.roomId);
                 SpawnDoorTile(positions[3], wall2.roomId);
+
+                initialRoomList[wall1.roomId].wallTileList.Remove(initialRoomList[wall1.roomId].wallTileList.Find(obj => obj.collider2d == hit2Ds[1][0].collider));
+                initialRoomList[wall2.roomId].wallTileList.Remove(initialRoomList[wall2.roomId].wallTileList.Find(obj => obj.collider2d == hit2Ds[2][0].collider));
+                initialRoomList[wall3.roomId].wallTileList.Remove(initialRoomList[wall3.roomId].wallTileList.Find(obj => obj.collider2d == hit2Ds[3][0].collider));
 
                 Destroy(hit2Ds[1][0].collider.gameObject);
                 Destroy(hit2Ds[2][0].collider.gameObject);
