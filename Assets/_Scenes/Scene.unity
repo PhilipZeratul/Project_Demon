@@ -323,9 +323,12 @@ MonoBehaviour:
     max: 10
   roomHolder: {fileID: 1657829517}
   corridorHolder: {fileID: 842410057}
-  floorTileSO: {fileID: 11400000, guid: 6c7f29f334b914749bac7350143d8622, type: 2}
-  wallTileSO: {fileID: 11400000, guid: 03ab7b780862b4083818f921a987d527, type: 2}
-  doorTileSO: {fileID: 11400000, guid: b720bd496cb2b481780f352d99852131, type: 2}
+  floorTileHolder: {fileID: 6616958553280011289, guid: ff09c758da70d47a88df7d5f6348cd02,
+    type: 3}
+  wallTileHolder: {fileID: 1354823206572350659, guid: 5f8913bcf981c4509b84b97aed83c843,
+    type: 3}
+  doorTileHolder: {fileID: 4801768730079519814, guid: 2cbecaeef2c1a41f2886a9082ae1bd3b,
+    type: 3}
 --- !u!4 &1452847395
 Transform:
   m_ObjectHideFlags: 0

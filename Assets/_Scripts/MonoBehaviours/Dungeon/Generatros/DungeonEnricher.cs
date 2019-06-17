@@ -31,8 +31,8 @@ public class DungeonEnricher : MonoBehaviour
         IsEnrichFinished = false;
 
         SetMainRoomFunc();
-        PlaceFloorSprite();
-        PlaceWallTileSprite();
+        SetFloorTileSprite();
+        SetWallTileSprite();
 
         yield return null;
         RemoveFloorCollider();
@@ -132,7 +132,7 @@ public class DungeonEnricher : MonoBehaviour
         }
     }
 
-    private void PlaceFloorSprite()
+    private void SetFloorTileSprite()
     {
         foreach (var room in dungeonGenerator.allRoomList)
         {
@@ -143,18 +143,18 @@ public class DungeonEnricher : MonoBehaviour
         }
     }
 
-    private void PlaceWallTileSprite()
+    private void SetWallTileSprite()
     {
         RaycastHit2D[] hits = new RaycastHit2D[1];
         int index = 0;
         int hitNum = 0;
-        Physics2D.queriesHitTriggers = false;
-        Physics2D.queriesStartInColliders = false;
+        //Physics2D.queriesHitTriggers = false;
 
         foreach (var room in dungeonGenerator.allRoomList)
         {
             foreach (var wallTile in room.wallTileList)
             {
+                Physics2D.queriesStartInColliders = false;
                 int north = 0, south = 0, east = 0, west = 0;
 
                 index = 0;
@@ -214,6 +214,63 @@ public class DungeonEnricher : MonoBehaviour
                         index += 54;
                     }
                 }
+                // Exceptions
+                Physics2D.queriesStartInColliders = true;
+                Vector2 checkPosition = new Vector2();
+                switch (index)
+                {
+                    //case 43:
+                    //    checkPosition.x = wallTile.go.transform.position.x - Constants.MapInfo.GridSize; 
+                    //    checkPosition.y = wallTile.go.transform.position.y - Constants.MapInfo.GridSize;
+                    //    hitNum = Physics2D.RaycastNonAlloc(checkPosition, Vector2.zero, hits);
+                    //    if (hitNum == 0)
+                    //        index = 27;
+                    //    break;
+                    //case 49:
+                        //checkPosition.x = wallTile.go.transform.position.x + Constants.MapInfo.GridSize;
+                        //checkPosition.y = wallTile.go.transform.position.y - Constants.MapInfo.GridSize;
+
+                        //hitNum = Physics2D.RaycastNonAlloc(checkPosition, Vector2.zero, hits);
+                        //if (hitNum == 0)
+                        //    index = 27;
+                        //break;
+                    case 51:
+                        checkPosition.x = wallTile.go.transform.position.x - Constants.MapInfo.GridSize;
+                        checkPosition.y = wallTile.go.transform.position.y - Constants.MapInfo.GridSize;
+
+                        hitNum = Physics2D.RaycastNonAlloc(checkPosition, Vector2.zero, hits);
+                        if (hitNum > 0 && hits[0].collider.GetComponent<DungeonDoor>())
+                            index = 45;
+                        else
+                        {
+                            checkPosition.x = wallTile.go.transform.position.x + Constants.MapInfo.GridSize;
+                            checkPosition.y = wallTile.go.transform.position.y - Constants.MapInfo.GridSize;
+
+                            hitNum = Physics2D.RaycastNonAlloc(checkPosition, Vector2.zero, hits);
+                            if (hitNum > 0 && hits[0].collider.GetComponent<DungeonDoor>())
+                                index = 33;
+                        }
+                        break;
+                    case 52:
+                        checkPosition.x = wallTile.go.transform.position.x - Constants.MapInfo.GridSize;
+                        checkPosition.y = wallTile.go.transform.position.y - Constants.MapInfo.GridSize;
+
+                        hitNum = Physics2D.RaycastNonAlloc(checkPosition, Vector2.zero, hits);
+                        if (hitNum > 0 && !hits[0].collider.GetComponent<DungeonFloor>())
+                            index = 45;
+                        else
+                        {
+                            checkPosition.x = wallTile.go.transform.position.x + Constants.MapInfo.GridSize;
+                            checkPosition.y = wallTile.go.transform.position.y - Constants.MapInfo.GridSize;
+
+                            hitNum = Physics2D.RaycastNonAlloc(checkPosition, Vector2.zero, hits);
+                            if (hitNum > 0 && !hits[0].collider.GetComponent<DungeonFloor>())
+                                index = 33;
+                        }
+                        break;
+
+                }
+
 
                 wallTile.spriteRenderer.sprite = wallTilemapSO.sprites[index];
                 if (wallTilemapSO.sprites[index] == null)
@@ -222,8 +279,8 @@ public class DungeonEnricher : MonoBehaviour
                 }
             }
         }
-        Physics2D.queriesHitTriggers = true;
-        Physics2D.queriesStartInColliders = true;
+        //Physics2D.queriesHitTriggers = true;
+        //Physics2D.queriesStartInColliders = true;
     }
 
     private void GenerateCompositeCollider()

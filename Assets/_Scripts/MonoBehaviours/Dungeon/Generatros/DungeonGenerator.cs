@@ -26,9 +26,9 @@ public class DungeonGenerator : MonoBehaviour
 
     [SerializeField] private GameObject roomHolder;
     [SerializeField] private GameObject corridorHolder;
-    [SerializeField] private TileSO floorTileSO;
-    [SerializeField] private TileSO wallTileSO;
-    [SerializeField] private TileSO doorTileSO;
+    [SerializeField] private GameObject floorTileHolder;
+    [SerializeField] private GameObject wallTileHolder;
+    [SerializeField] private GameObject doorTileHolder;
 
     // Horizontal or Vertical only line.
     // Start/End Unified: Horizontal from left to right, Vertical from bottom to top.
@@ -177,7 +177,7 @@ public class DungeonGenerator : MonoBehaviour
                         if (!((m == 0 && n == 0) || (m == 0 && n == bottom) ||
                              (m == right && n == 0) || (m == right && n == bottom)))
                         {
-                            GameObject wallGO = Instantiate(wallTileSO.tilePrefabList[0], position, Quaternion.identity, roomRoot.transform);
+                            GameObject wallGO = Instantiate(wallTileHolder, position, Quaternion.identity, roomRoot.transform);
                             wallGO.GetComponent<DungeonTile>().roomId = id;
                             DungeonRoomData.Tile wallTile = new DungeonRoomData.Tile(wallGO);
                             initialRoomList[id].wallTileList.Add(wallTile);
@@ -185,7 +185,7 @@ public class DungeonGenerator : MonoBehaviour
                     }
                     else
                     {
-                        GameObject floorGO = Instantiate(floorTileSO.tilePrefabList[0], position, Quaternion.identity, roomRoot.transform);
+                        GameObject floorGO = Instantiate(floorTileHolder, position, Quaternion.identity, roomRoot.transform);
                         floorGO.GetComponent<DungeonTile>().roomId = id;
                         DungeonRoomData.Tile floorTile = new DungeonRoomData.Tile(floorGO);
                         initialRoomList[id].floorTileList.Add(floorTile);
@@ -277,7 +277,7 @@ public class DungeonGenerator : MonoBehaviour
                 if (count >= numOfMainRooms)
                     break;
                 // A marker for main room center.
-                Instantiate(wallTileSO.tilePrefabList[0], initialRoomList[i].center, Quaternion.identity, initialRoomList[i].root.transform);
+                Instantiate(wallTileHolder, initialRoomList[i].center, Quaternion.identity, initialRoomList[i].root.transform);
             }
         }
 
@@ -709,7 +709,7 @@ public class DungeonGenerator : MonoBehaviour
 
     private void SpawnDoorTile(Vector2 position, int roomId)
     {
-        GameObject tileGO = Instantiate(doorTileSO.tilePrefabList[0], position, Quaternion.identity, initialRoomList[roomId].root.transform);
+        GameObject tileGO = Instantiate(doorTileHolder, position, Quaternion.identity, initialRoomList[roomId].root.transform);
         tileGO.GetComponent<DungeonTile>().roomId = roomId;
         DungeonRoomData.Tile tile = new DungeonRoomData.Tile(tileGO);
         Collider2D collider2d = tileGO.AddComponent<BoxCollider2D>();
@@ -723,7 +723,7 @@ public class DungeonGenerator : MonoBehaviour
         Collider2D collider2d;
         if (isWall)
         {
-            tileGO = Instantiate(wallTileSO.tilePrefabList[0], position, Quaternion.identity, root.transform);
+            tileGO = Instantiate(wallTileHolder, position, Quaternion.identity, root.transform);
             tileGO.GetComponent<DungeonTile>().roomId = corridorRoom.id;
             DungeonRoomData.Tile tile = new DungeonRoomData.Tile(tileGO);
             collider2d = tileGO.AddComponent<BoxCollider2D>();
@@ -732,7 +732,7 @@ public class DungeonGenerator : MonoBehaviour
         }
         else
         {
-            tileGO = Instantiate(floorTileSO.tilePrefabList[0], position, Quaternion.identity, root.transform);
+            tileGO = Instantiate(floorTileHolder, position, Quaternion.identity, root.transform);
             tileGO.GetComponent<DungeonTile>().roomId = corridorRoom.id;
             DungeonRoomData.Tile tile = new DungeonRoomData.Tile(tileGO);
             collider2d = tileGO.AddComponent<BoxCollider2D>();
