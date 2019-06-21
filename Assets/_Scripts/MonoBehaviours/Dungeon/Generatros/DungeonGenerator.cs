@@ -113,12 +113,11 @@ public class DungeonGenerator : MonoBehaviour
         UpdateMainRoomConnection(ref graph);
         GenerateCorridorLine(graph);
         PruneRoom();
-        ChangeCollider();
+        ChangeToTileCollider();
         yield return waitForFixedUpdate;
         BuildCorridor();
         yield return waitForFixedUpdate;
-        DisableDoorColliders();
-        yield return waitForFixedUpdate;
+
 
         IsGenerationFinished = true;
         GenerationFinished?.Invoke();
@@ -493,7 +492,7 @@ public class DungeonGenerator : MonoBehaviour
         allRoomList.AddRange(supportRoomList);
     }
 
-    private void ChangeCollider()
+    private void ChangeToTileCollider()
     {
         BoxCollider2D collider2d;
         foreach (var room in allRoomList)
@@ -740,17 +739,6 @@ public class DungeonGenerator : MonoBehaviour
             corridorRoom.floorTileList.Add(tile);
         }
 
-    }
-
-    private void DisableDoorColliders()
-    {
-        foreach (var room in mainRoomList)
-        {
-            foreach (var tile in room.doorTileList)
-            {
-                tile.collider2d.isTrigger = true;
-            }
-        }
     }
 
     private IEnumerator ClearAll()

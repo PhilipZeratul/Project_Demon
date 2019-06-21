@@ -359,6 +359,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   floorTilemapSO: {fileID: 11400000, guid: 617045f3accda4ff5863d20b9f109a99, type: 2}
   wallTilemapSO: {fileID: 11400000, guid: 246eb126f22824388816c2bd5f3cc9ce, type: 2}
+  doorTileSO: {fileID: 11400000, guid: b720bd496cb2b481780f352d99852131, type: 2}
 --- !u!1 &1657829517
 GameObject:
   m_ObjectHideFlags: 0

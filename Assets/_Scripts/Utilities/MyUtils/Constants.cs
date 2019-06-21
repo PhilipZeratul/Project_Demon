@@ -3,8 +3,10 @@
     public static class MapInfo
     {
         public const int GridSize = 1;
+        public const int PixelPerUnit = 32;
         public const float MainRoomThreshold = 1.1f;
         public const float TriangleThreshold = 23f;
+        public const float WallIsoOffset = 0.46f;
     }
 
     public static class InjectID
