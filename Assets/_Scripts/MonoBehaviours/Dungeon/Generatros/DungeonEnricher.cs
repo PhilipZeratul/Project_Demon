@@ -380,21 +380,28 @@ public class DungeonEnricher : MonoBehaviour
                 Physics2D.queriesHitTriggers = true;
                 Physics2D.queriesStartInColliders = false;
 
-                if (index == 12 || index == 56)
+                // Exceptions
+                switch(index)
                 {
-                    ChangeDoorTileGO(index, doorTile, room, i);
-                }
-                else
-                {
-                    if (doorTileSO.tileSpriteList[index] == null)
-                    {
-                        Debug.LogFormat("No door sprites! north {0}, west {1}, east {2}, south {3}, index {4}, position {5}",
-                                        north, west, east, south, index, doorTile.go.transform.position);
+                    case 2:
+                        hitNum = Physics2D.RaycastNonAlloc(doorTile.go.transform.position, Vector2.down, hits, Constants.MapInfo.GridSize);
+                        if (hitNum > 0)
+                            index = 4;
+                        break;
+                    case 12:
+                    case 56:
+                        ChangeDoorTileGO(index, doorTile, room, i);
                         continue;
-                    }
-                    doorTile.spriteRenderer.sprite = doorTileSO.tileSpriteList[index];
-                    doorTile.collider2d.isTrigger = false;
                 }
+
+                if (doorTileSO.tileSpriteList[index] == null)
+                {
+                    Debug.LogFormat("No door sprites! north {0}, west {1}, east {2}, south {3}, index {4}, position {5}",
+                                    north, west, east, south, index, doorTile.go.transform.position);
+                    continue;
+                }
+                doorTile.spriteRenderer.sprite = doorTileSO.tileSpriteList[index];
+                doorTile.collider2d.isTrigger = false;
             }
         }
         Physics2D.queriesStartInColliders = true;
