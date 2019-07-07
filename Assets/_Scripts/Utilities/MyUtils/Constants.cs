@@ -29,4 +29,9 @@
         public const string Enemy = "Enemy";
         public const string Wall = "Wall";
     }
+
+    public static class SortingLayer
+    {
+        public const string Player = "Player";
+    }
 }

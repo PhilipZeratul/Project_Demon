@@ -23,6 +23,30 @@ TextureImporter:
   - first:
       213: -8829531868937305392
     second: Demon_Animation_6
+  - first:
+      213: 5112953800341695663
+    second: Demon_Animation_7
+  - first:
+      213: 85803271794016528
+    second: Demon_Animation_8
+  - first:
+      213: 3609579247768789684
+    second: Demon_Animation_9
+  - first:
+      213: -6754753773404708714
+    second: Demon_Animation_10
+  - first:
+      213: 7257275754593202421
+    second: Demon_Animation_11
+  - first:
+      213: -969757227457314187
+    second: Demon_Animation_12
+  - first:
+      213: 5170672929309910168
+    second: Demon_Animation_13
+  - first:
+      213: 7575311809286780802
+    second: Demon_Animation_14
   externalObjects: {}
   serializedVersion: 10
   mipmaps:
@@ -110,8 +134,8 @@ TextureImporter:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 31
-        height: 38
+        width: 40
+        height: 48
       alignment: 7
       pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -119,7 +143,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 73c92121ed61b4f8fa9fa74efbd8634e
+      spriteID: 3f99ba5dde9e44f06a61b5e3b022398d
       internalID: -3101322623091756616
       vertices: []
       indices: 
@@ -129,10 +153,10 @@ TextureImporter:
       name: Demon_Animation_1
       rect:
         serializedVersion: 2
-        x: 32
+        x: 40
         y: 0
-        width: 31
-        height: 39
+        width: 40
+        height: 48
       alignment: 7
       pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -140,7 +164,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 48ddb8f45a87243838d51e14fdff1b1f
+      spriteID: 5d96d80fa542a49f8852ec2c148ed1d9
       internalID: 1253729256977629377
       vertices: []
       indices: 
@@ -150,10 +174,10 @@ TextureImporter:
       name: Demon_Animation_2
       rect:
         serializedVersion: 2
-        x: 64
+        x: 80
         y: 0
-        width: 31
-        height: 39
+        width: 40
+        height: 48
       alignment: 7
       pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -161,7 +185,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: e60d1be6314d549e78874bf63aa0ea72
+      spriteID: 1ae63cb9a36c845cd8e30a8dac40f955
       internalID: -4138523561025835253
       vertices: []
       indices: 
@@ -171,10 +195,10 @@ TextureImporter:
       name: Demon_Animation_3
       rect:
         serializedVersion: 2
-        x: 96
+        x: 120
         y: 0
-        width: 31
-        height: 39
+        width: 40
+        height: 48
       alignment: 7
       pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -182,7 +206,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 589d6513db8c444a6a30cb9a7c47a33d
+      spriteID: 2fd429c8e76e848dc82dbbcfc1978eb5
       internalID: -7626697626219901838
       vertices: []
       indices: 
@@ -192,10 +216,10 @@ TextureImporter:
       name: Demon_Animation_4
       rect:
         serializedVersion: 2
-        x: 128
+        x: 160
         y: 0
-        width: 31
-        height: 39
+        width: 40
+        height: 48
       alignment: 7
       pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -203,7 +227,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 75cfb8ed9f1b246218d09335630dcfdf
+      spriteID: 8c15fb0b30ecd435bb7a910dc04776f3
       internalID: 5632244021984328176
       vertices: []
       indices: 
@@ -213,10 +237,10 @@ TextureImporter:
       name: Demon_Animation_5
       rect:
         serializedVersion: 2
-        x: 160
+        x: 200
         y: 0
-        width: 31
-        height: 39
+        width: 40
+        height: 48
       alignment: 7
       pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -224,7 +248,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: fa6fd9eb914324786994c6ac1b38af6e
+      spriteID: c99d1b3e5db0d403cb0348d58f3971ce
       internalID: 5456587587123638518
       vertices: []
       indices: 
@@ -234,10 +258,10 @@ TextureImporter:
       name: Demon_Animation_6
       rect:
         serializedVersion: 2
-        x: 192
+        x: 240
         y: 0
-        width: 31
-        height: 38
+        width: 40
+        height: 48
       alignment: 7
       pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -245,8 +269,176 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 18b0c86ed746e40969b8305b18bfadae
+      spriteID: e5d12509dbeb1464e9451165667d2d8d
       internalID: -8829531868937305392
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Demon_Animation_7
+      rect:
+        serializedVersion: 2
+        x: 280
+        y: 0
+        width: 40
+        height: 48
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 601dfeb1493d74bb2a66c3d953e5e77b
+      internalID: 5112953800341695663
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Demon_Animation_8
+      rect:
+        serializedVersion: 2
+        x: 320
+        y: 0
+        width: 40
+        height: 48
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 37fd84faeb1824d42819546cc1592223
+      internalID: 85803271794016528
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Demon_Animation_9
+      rect:
+        serializedVersion: 2
+        x: 360
+        y: 0
+        width: 40
+        height: 48
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: cde184d1ae2ff470aae806d8114c92ec
+      internalID: 3609579247768789684
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Demon_Animation_10
+      rect:
+        serializedVersion: 2
+        x: 400
+        y: 0
+        width: 40
+        height: 48
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8d6252e9fd1a44c18a4997b73c82aa28
+      internalID: -6754753773404708714
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Demon_Animation_11
+      rect:
+        serializedVersion: 2
+        x: 440
+        y: 0
+        width: 40
+        height: 48
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: cd5bd418ae825495b86c89fd23541756
+      internalID: 7257275754593202421
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Demon_Animation_12
+      rect:
+        serializedVersion: 2
+        x: 480
+        y: 0
+        width: 40
+        height: 48
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: dcde185eda66548589bab85a2547a60f
+      internalID: -969757227457314187
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Demon_Animation_13
+      rect:
+        serializedVersion: 2
+        x: 520
+        y: 0
+        width: 40
+        height: 48
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 551989d5a44d847bd8d5d22b2dcce5aa
+      internalID: 5170672929309910168
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Demon_Animation_14
+      rect:
+        serializedVersion: 2
+        x: 560
+        y: 0
+        width: 40
+        height: 48
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: cddc55c8759ec40c681d3917b329a7a5
+      internalID: 7575311809286780802
       vertices: []
       indices: 
       edges: []

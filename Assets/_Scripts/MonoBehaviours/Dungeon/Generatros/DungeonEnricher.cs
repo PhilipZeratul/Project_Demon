@@ -212,6 +212,7 @@ public class DungeonEnricher : MonoBehaviour
                         // Add Isometric sorting order to tall walls
                         IsometricObjectStatic isometric = wallTile.go.AddComponent<IsometricObjectStatic>();
                         isometric.targetOffset = Constants.MapInfo.WallIsoOffset;
+                        wallTile.go.GetComponent<SpriteRenderer>().sortingLayerName = Constants.SortingLayer.Player;
                     }
                     else
                     {
