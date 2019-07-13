@@ -31,10 +31,10 @@ public class PlayerControls : IInputActionCollection
                     ""bindings"": []
                 },
                 {
-                    ""name"": ""Look"",
-                    ""id"": ""3c0a15f8-9fc2-4fbe-80f7-fd2bcfc962f0"",
-                    ""expectedControlLayout"": ""Vector2"",
-                    ""continuous"": true,
+                    ""name"": ""LightAttack"",
+                    ""id"": ""22184be7-b338-4dee-9d7a-a91eef4177ea"",
+                    ""expectedControlLayout"": ""Button"",
+                    ""continuous"": false,
                     ""passThrough"": false,
                     ""initialStateCheck"": false,
                     ""processors"": """",
@@ -42,9 +42,20 @@ public class PlayerControls : IInputActionCollection
                     ""bindings"": []
                 },
                 {
-                    ""name"": ""Fire"",
-                    ""id"": ""22184be7-b338-4dee-9d7a-a91eef4177ea"",
-                    ""expectedControlLayout"": ""Button"",
+                    ""name"": ""HeavyAttack"",
+                    ""id"": ""f46e8f94-fb32-4d4a-ab48-69e37d5f8cbf"",
+                    ""expectedControlLayout"": """",
+                    ""continuous"": false,
+                    ""passThrough"": false,
+                    ""initialStateCheck"": false,
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""bindings"": []
+                },
+                {
+                    ""name"": ""Dash"",
+                    ""id"": ""93f440dc-e105-453b-9a82-f06fae074198"",
+                    ""expectedControlLayout"": """",
                     ""continuous"": false,
                     ""passThrough"": false,
                     ""initialStateCheck"": false,
@@ -188,36 +199,12 @@ public class PlayerControls : IInputActionCollection
                 },
                 {
                     ""name"": """",
-                    ""id"": ""c1f7a91b-d0fd-4a62-997e-7fb9b69bf235"",
-                    ""path"": ""<Gamepad>/rightStick"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": "";Gamepad"",
-                    ""action"": ""Look"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false,
-                    ""modifiers"": """"
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""8c8e490b-c610-4785-884f-f04217b23ca4"",
-                    ""path"": ""<Mouse>/delta"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": "";Keyboard&Mouse"",
-                    ""action"": ""Look"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false,
-                    ""modifiers"": """"
-                },
-                {
-                    ""name"": """",
                     ""id"": ""143bb1cd-cc10-4eca-a2f0-a3664166fe91"",
-                    ""path"": ""<Gamepad>/rightTrigger"",
+                    ""path"": ""<Gamepad>/buttonNorth"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": "";Gamepad"",
-                    ""action"": ""Fire"",
+                    ""action"": ""LightAttack"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false,
                     ""modifiers"": """"
@@ -228,8 +215,80 @@ public class PlayerControls : IInputActionCollection
                     ""path"": ""<Mouse>/leftButton"",
                     ""interactions"": """",
                     ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""Fire"",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""LightAttack"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false,
+                    ""modifiers"": """"
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""b2919313-44f2-4b36-826b-c376c11f8a86"",
+                    ""path"": ""<Keyboard>/j"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""LightAttack"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false,
+                    ""modifiers"": """"
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""33a94940-5586-4ca1-a4d8-334f036973a1"",
+                    ""path"": ""<Gamepad>/buttonEast"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Gamepad"",
+                    ""action"": ""HeavyAttack"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false,
+                    ""modifiers"": """"
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""02aef6d7-f0c2-4d06-ad79-a483de13b122"",
+                    ""path"": ""<Mouse>/rightButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""HeavyAttack"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false,
+                    ""modifiers"": """"
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""fa01f036-33e0-48b4-8b8d-7bcf2f10bb4f"",
+                    ""path"": ""<Keyboard>/k"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""HeavyAttack"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false,
+                    ""modifiers"": """"
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""3570ea89-eed3-42c5-8bf5-68d70fb687cf"",
+                    ""path"": ""<Gamepad>/buttonSouth"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Gamepad"",
+                    ""action"": ""Dash"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false,
+                    ""modifiers"": """"
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""0e282571-e214-4d74-95ee-b41fcee81f5b"",
+                    ""path"": ""<Keyboard>/space"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""Dash"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false,
                     ""modifiers"": """"
@@ -272,8 +331,9 @@ public class PlayerControls : IInputActionCollection
         // Player
         m_Player = asset.GetActionMap("Player");
         m_Player_Move = m_Player.GetAction("Move");
-        m_Player_Look = m_Player.GetAction("Look");
-        m_Player_Fire = m_Player.GetAction("Fire");
+        m_Player_LightAttack = m_Player.GetAction("LightAttack");
+        m_Player_HeavyAttack = m_Player.GetAction("HeavyAttack");
+        m_Player_Dash = m_Player.GetAction("Dash");
     }
 
     ~PlayerControls()
@@ -327,15 +387,17 @@ public class PlayerControls : IInputActionCollection
     private InputActionMap m_Player;
     private IPlayerActions m_PlayerActionsCallbackInterface;
     private InputAction m_Player_Move;
-    private InputAction m_Player_Look;
-    private InputAction m_Player_Fire;
+    private InputAction m_Player_LightAttack;
+    private InputAction m_Player_HeavyAttack;
+    private InputAction m_Player_Dash;
     public struct PlayerActions
     {
         private PlayerControls m_Wrapper;
         public PlayerActions(PlayerControls wrapper) { m_Wrapper = wrapper; }
         public InputAction @Move { get { return m_Wrapper.m_Player_Move; } }
-        public InputAction @Look { get { return m_Wrapper.m_Player_Look; } }
-        public InputAction @Fire { get { return m_Wrapper.m_Player_Fire; } }
+        public InputAction @LightAttack { get { return m_Wrapper.m_Player_LightAttack; } }
+        public InputAction @HeavyAttack { get { return m_Wrapper.m_Player_HeavyAttack; } }
+        public InputAction @Dash { get { return m_Wrapper.m_Player_Dash; } }
         public InputActionMap Get() { return m_Wrapper.m_Player; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -349,12 +411,15 @@ public class PlayerControls : IInputActionCollection
                 Move.started -= m_Wrapper.m_PlayerActionsCallbackInterface.OnMove;
                 Move.performed -= m_Wrapper.m_PlayerActionsCallbackInterface.OnMove;
                 Move.canceled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnMove;
-                Look.started -= m_Wrapper.m_PlayerActionsCallbackInterface.OnLook;
-                Look.performed -= m_Wrapper.m_PlayerActionsCallbackInterface.OnLook;
-                Look.canceled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnLook;
-                Fire.started -= m_Wrapper.m_PlayerActionsCallbackInterface.OnFire;
-                Fire.performed -= m_Wrapper.m_PlayerActionsCallbackInterface.OnFire;
-                Fire.canceled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnFire;
+                LightAttack.started -= m_Wrapper.m_PlayerActionsCallbackInterface.OnLightAttack;
+                LightAttack.performed -= m_Wrapper.m_PlayerActionsCallbackInterface.OnLightAttack;
+                LightAttack.canceled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnLightAttack;
+                HeavyAttack.started -= m_Wrapper.m_PlayerActionsCallbackInterface.OnHeavyAttack;
+                HeavyAttack.performed -= m_Wrapper.m_PlayerActionsCallbackInterface.OnHeavyAttack;
+                HeavyAttack.canceled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnHeavyAttack;
+                Dash.started -= m_Wrapper.m_PlayerActionsCallbackInterface.OnDash;
+                Dash.performed -= m_Wrapper.m_PlayerActionsCallbackInterface.OnDash;
+                Dash.canceled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnDash;
             }
             m_Wrapper.m_PlayerActionsCallbackInterface = instance;
             if (instance != null)
@@ -362,12 +427,15 @@ public class PlayerControls : IInputActionCollection
                 Move.started += instance.OnMove;
                 Move.performed += instance.OnMove;
                 Move.canceled += instance.OnMove;
-                Look.started += instance.OnLook;
-                Look.performed += instance.OnLook;
-                Look.canceled += instance.OnLook;
-                Fire.started += instance.OnFire;
-                Fire.performed += instance.OnFire;
-                Fire.canceled += instance.OnFire;
+                LightAttack.started += instance.OnLightAttack;
+                LightAttack.performed += instance.OnLightAttack;
+                LightAttack.canceled += instance.OnLightAttack;
+                HeavyAttack.started += instance.OnHeavyAttack;
+                HeavyAttack.performed += instance.OnHeavyAttack;
+                HeavyAttack.canceled += instance.OnHeavyAttack;
+                Dash.started += instance.OnDash;
+                Dash.performed += instance.OnDash;
+                Dash.canceled += instance.OnDash;
             }
         }
     }
@@ -399,7 +467,8 @@ public class PlayerControls : IInputActionCollection
     public interface IPlayerActions
     {
         void OnMove(InputAction.CallbackContext context);
-        void OnLook(InputAction.CallbackContext context);
-        void OnFire(InputAction.CallbackContext context);
+        void OnLightAttack(InputAction.CallbackContext context);
+        void OnHeavyAttack(InputAction.CallbackContext context);
+        void OnDash(InputAction.CallbackContext context);
     }
 }

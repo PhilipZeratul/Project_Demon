@@ -21,7 +21,7 @@ public class PlayerController : MonoBehaviour
         animator = GetComponent<Animator>();
     }
 
-    // Binded by Unity Event in the editor
+    // Binded by Unity Event in the editor on player prefab
     public void Movement(InputAction.CallbackContext ctx)
     {
         Vector2 input = ctx.ReadValue<Vector2>();
@@ -35,5 +35,20 @@ public class PlayerController : MonoBehaviour
             animator.SetBool(IsRunningRight, false);
 
         physicsObject.Move(velocityX, velocityY);
+    }
+
+    public void LightAttack(InputAction.CallbackContext ctx)
+    {
+
+    }
+
+    public void HeavyAttack(InputAction.CallbackContext ctx)
+    {
+
+    }
+
+    public void Dash(InputAction.CallbackContext ctx)
+    {
+
     }
 }
